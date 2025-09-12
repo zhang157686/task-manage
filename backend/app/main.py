@@ -23,6 +23,14 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     logger.info("Starting TaskMaster AI Backend...")
+    
+    # Test database connection on startup
+    from app.core.database import test_connection
+    if test_connection():
+        logger.info("Database connection successful")
+    else:
+        logger.warning("Database connection failed - some features may not work")
+    
     yield
     logger.info("Shutting down TaskMaster AI Backend...")
 
