@@ -10,7 +10,6 @@ import {
   Map,
   PieChart,
   Send,
-  Settings2,
   SquareTerminal,
 } from "lucide-react"
 
@@ -27,93 +26,95 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "项目管理",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "项目列表",
-          url: "/projects",
-        },
-        {
-          title: "创建项目",
-          url: "/projects/new",
-        },
-      ],
-    },
-    {
-      title: "任务管理",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "任务列表",
-          url: "/tasks",
-        },
-        {
-          title: "任务生成",
-          url: "/tasks/generate",
-        },
-      ],
-    },
-    {
-      title: "AI模型配置",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "模型设置",
-          url: "/models",
-        },
-        {
-          title: "API密钥",
-          url: "/api-keys",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "支持",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "反馈",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+import { useAuth } from "@/contexts/auth-context"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
+
+  const data = {
+    user: {
+      name: user?.username || "用户",
+      email: user?.email || "user@example.com",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    navMain: [
+      {
+        title: "项目管理",
+        url: "#",
+        icon: SquareTerminal,
+        isActive: true,
+        items: [
+          {
+            title: "项目列表",
+            url: "/projects",
+          },
+          {
+            title: "创建项目",
+            url: "/projects/new",
+          },
+        ],
+      },
+      {
+        title: "任务管理",
+        url: "#",
+        icon: Bot,
+        items: [
+          {
+            title: "任务列表",
+            url: "/tasks",
+          },
+          {
+            title: "任务生成",
+            url: "/tasks/generate",
+          },
+        ],
+      },
+      {
+        title: "AI模型配置",
+        url: "#",
+        icon: BookOpen,
+        items: [
+          {
+            title: "模型设置",
+            url: "/models",
+          },
+          {
+            title: "API密钥",
+            url: "/settings/api-keys",
+          },
+        ],
+      },
+    ],
+    navSecondary: [
+      {
+        title: "支持",
+        url: "#",
+        icon: LifeBuoy,
+      },
+      {
+        title: "反馈",
+        url: "#",
+        icon: Send,
+      },
+    ],
+    projects: [
+      {
+        name: "Design Engineering",
+        url: "#",
+        icon: Frame,
+      },
+      {
+        name: "Sales & Marketing",
+        url: "#",
+        icon: PieChart,
+      },
+      {
+        name: "Travel",
+        url: "#",
+        icon: Map,
+      },
+    ],
+  };
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
