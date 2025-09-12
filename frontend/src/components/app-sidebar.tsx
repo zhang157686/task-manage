@@ -70,13 +70,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ],
       },
       {
-        title: "AI模型配置",
+        title: "设置",
         url: "#",
         icon: BookOpen,
         items: [
           {
-            title: "模型设置",
-            url: "/models",
+            title: "AI模型配置",
+            url: "/settings/models",
           },
           {
             title: "API密钥",
