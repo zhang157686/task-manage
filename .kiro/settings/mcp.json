@@ -1,0 +1,53 @@
+{
+  "mcpServers": {
+    "task-master-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "get_tasks"
+      ]
+    },
+    "Context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-f74bf406-bc82-4834-8c75-e534fe98dc3d"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "get-library-docs"
+      ]
+    },
+    "searxng": {
+      "command": "mcp-searxng",
+      "args": [],
+      "env": {
+        "SEARXNG_URL": "https://searxng.telment.com"
+      },
+      "disabled": false,
+      "autoApprove": []
+    },
+    "datetime": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@takanarishimbo/datetime-mcp-server"
+      ],
+      "env": {
+        "DATETIME_FORMAT": "custom",
+        "DATE_FORMAT_STRING": "YYYY/MM/DD HH:mm",
+        "TIMEZONE": "Asia/Shanghai"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
