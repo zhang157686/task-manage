@@ -15,9 +15,9 @@
             "id": 1,
             "title": "前端Next.js项目初始化",
             "description": "创建Next.js 14项目并配置shadcn/ui组件库",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
-            "details": "1. 使用create-next-app创建Next.js 14项目，启用TypeScript和Tailwind CSS；2. 安装并配置shadcn/ui组件库；3. 配置项目的基础文件结构（components、lib、app等目录）；4. 创建基础的布局组件（侧边栏+顶部导航布局）；5. 配置shadcn/ui的主题和样式变量。参考shadcn/ui官方文档的最新安装和配置方式。"
+            "details": "1. 使用create-next-app创建Next.js 14项目，启用TypeScript和Tailwind CSS；2. 安装并配置shadcn/ui组件库；3. 配置项目的基础文件结构（components、lib、app等目录）；4. 创建基础的布局组件（侧边栏+顶部导航布局）；5. 配置shadcn/ui的主题和样式变量。参考shadcn/ui官方文档的最新安装和配置方式。\n<info added on 2025-09-12T14:36:15.937Z>\n开始实施前端Next.js项目初始化。基于最新文档研究，将按照以下步骤进行：使用Next.js 14 App Router架构，集成TypeScript和Tailwind CSS，配置shadcn/ui组件库，创建现代化的侧边栏+顶部导航布局。技术要点包括使用最新的create-next-app工具、配置shadcn/ui主题系统、建立标准的项目文件结构。实施过程中将重点关注App Router的最佳实践和shadcn/ui的官方配置方式。\n</info added on 2025-09-12T14:36:15.937Z>\n<info added on 2025-09-12T14:46:04.062Z>\n前端Next.js项目初始化已成功完成！实现了完整的现代化前端架构，包括：完整的侧边栏导航系统（主要功能、最近项目、用户信息模块），响应式布局支持移动端和桌面端，中文界面配置，仪表板首页展示项目统计和快速操作，成功集成shadcn/ui多个组件（Button、Card、Sidebar、Avatar、DropdownMenu等）。开发服务器已在http://localhost:3000正常启动，页面编译渲染正常，所有功能测试通过。项目基础架构的前端部分已就绪，可以继续进行后端FastAPI项目初始化。\n</info added on 2025-09-12T14:46:04.062Z>"
           },
           {
             "id": 2,
@@ -32,7 +32,9 @@
             "title": "数据库设计和连接配置",
             "description": "设计MySQL数据库表结构并配置连接",
             "status": "pending",
-            "dependencies": [1.2],
+            "dependencies": [
+              1.2
+            ],
             "details": "1. 设计数据库表：users（用户表）、access_keys（API密钥表）、models（模型配置表）、projects（项目表）、tasks（任务表）、project_tasks（项目任务关联表）；2. 使用SQLAlchemy创建ORM模型；3. 配置数据库连接池和会话管理；4. 创建数据库初始化脚本；5. 配置Alembic进行数据库迁移管理。各表字段详细设计：users表包含id、username、email、password_hash、created_at等；access_keys表包含id、user_id、key_value、name、expires_at、is_active等。"
           }
         ]
@@ -42,7 +44,9 @@
         "title": "用户认证和API密钥管理",
         "description": "实现用户注册登录系统和API密钥管理功能",
         "status": "pending",
-        "dependencies": [1],
+        "dependencies": [
+          1
+        ],
         "priority": "high",
         "details": "1. 实现用户注册、登录、退出功能；2. 实现JWT token认证中间件；3. 实现API密钥的CRUD操作；4. 前端实现登录页面和API密钥管理页面；5. 实现API密钥的权限验证中间件。",
         "testStrategy": "测试用户注册登录流程，测试API密钥生成、更新、删除和权限验证功能",
@@ -52,7 +56,9 @@
             "title": "后端用户认证API",
             "description": "开发用户注册、登录、JWT认证的后端API",
             "status": "pending",
-            "dependencies": [1.3],
+            "dependencies": [
+              1.3
+            ],
             "details": "1. 创建用户注册API（/api/auth/register），包含用户名、邮箱、密码验证；2. 创建用户登录API（/api/auth/login），返回JWT token；3. 创建JWT token验证中间件；4. 创建用户信息获取API（/api/auth/me）；5. 实现密码哈希和验证（使用passlib）；6. 配置JWT token过期时间和刷新机制。密码需要进行bcrypt加密存储。"
           },
           {
@@ -60,7 +66,9 @@
             "title": "API密钥管理后端API",
             "description": "开发API密钥的增删改查功能",
             "status": "pending",
-            "dependencies": [2.1],
+            "dependencies": [
+              2.1
+            ],
             "details": "1. 创建API密钥生成API（/api/access-keys），生成UUID格式的密钥；2. 创建API密钥列表获取API（/api/access-keys）；3. 创建API密钥更新API（/api/access-keys/{key_id}），支持修改名称和过期时间；4. 创建API密钥删除API（/api/access-keys/{key_id}）；5. 创建API密钥验证中间件，用于验证MCP请求；6. 实现API密钥的过期检查和状态管理。API密钥格式：task_管理系统_随机字符串。"
           },
           {
@@ -68,7 +76,10 @@
             "title": "前端用户认证界面",
             "description": "使用shadcn/ui组件开发用户登录注册和API密钥管理界面",
             "status": "pending",
-            "dependencies": [1.1, 2.2],
+            "dependencies": [
+              1.1,
+              2.2
+            ],
             "details": "1. 创建登录页面（/login），使用shadcn/ui的Form、Input、Button组件；2. 创建注册页面（/register）；3. 实现前端JWT token存储和自动刷新；4. 创建API密钥管理页面（/settings/api-keys），包含密钥列表、生成新密钥、编辑和删除功能；5. 使用shadcn/ui的Table、Dialog、Toast组件；6. 实现路由保护，未登录用户重定向到登录页；7. 配置axios拦截器处理认证token。界面要求现代化设计，响应式布局。"
           }
         ]
@@ -78,7 +89,9 @@
         "title": "AI模型配置管理",
         "description": "实现OpenAI兼容的模型配置管理功能",
         "status": "pending",
-        "dependencies": [2],
+        "dependencies": [
+          2
+        ],
         "priority": "medium",
         "details": "1. 设计模型配置的数据结构；2. 实现模型配置的CRUD API；3. 集成OpenAI SDK进行模型调用；4. 前端实现模型配置管理页面；5. 实现模型连接测试功能。",
         "testStrategy": "测试模型配置的保存、修改和删除，测试与OpenAI API的连接",
@@ -88,7 +101,9 @@
             "title": "模型配置后端API",
             "description": "开发模型配置的管理API和OpenAI集成",
             "status": "pending",
-            "dependencies": [2.1],
+            "dependencies": [
+              2.1
+            ],
             "details": "1. 创建模型配置数据模型（包含base_url、api_key、model_name、max_tokens、temperature等字段）；2. 实现模型配置CRUD API（/api/models）；3. 集成OpenAI Python SDK，支持自定义base_url；4. 创建模型连接测试API（/api/models/{model_id}/test）；5. 实现模型调用的通用接口，用于后续任务生成；6. 配置模型调用的错误处理和重试机制。支持OpenAI、Azure OpenAI、其他兼容API。"
           },
           {
@@ -96,7 +111,10 @@
             "title": "前端模型配置界面",
             "description": "使用shadcn/ui开发模型配置管理页面",
             "status": "pending",
-            "dependencies": [3.1, 2.3],
+            "dependencies": [
+              3.1,
+              2.3
+            ],
             "details": "1. 创建模型配置页面（/settings/models），使用shadcn/ui的Form组件；2. 实现模型配置的表单验证（URL格式、必填字段等）；3. 创建模型列表展示，使用Table组件；4. 实现模型连接测试功能，显示测试结果；5. 添加模型配置的导入导出功能；6. 使用Toast组件显示操作结果反馈。界面要包含Base URL、API Key、模型名称、最大Token数、温度参数等配置项。"
           }
         ]
@@ -106,7 +124,9 @@
         "title": "项目管理功能",
         "description": "实现项目的创建、编辑、删除和配置管理",
         "status": "pending",
-        "dependencies": [3],
+        "dependencies": [
+          3
+        ],
         "priority": "high",
         "details": "1. 设计项目数据模型；2. 实现项目CRUD API；3. 实现项目配置功能（AI输出语言等）；4. 前端实现项目管理界面；5. 实现项目列表和详情页面。",
         "testStrategy": "测试项目的创建、编辑、删除功能，验证项目配置的保存和应用",
@@ -116,7 +136,9 @@
             "title": "项目管理后端API",
             "description": "开发项目CRUD和配置管理的后端API",
             "status": "pending",
-            "dependencies": [3.1],
+            "dependencies": [
+              3.1
+            ],
             "details": "1. 创建项目数据模型（包含id、name、description、user_id、settings、created_at、updated_at等字段）；2. 实现项目CRUD API（/api/projects）；3. 实现项目配置API（/api/projects/{project_id}/settings），支持AI输出语言、任务格式模板等配置；4. 创建项目统计API（/api/projects/{project_id}/stats），返回任务数量、完成情况等；5. 实现项目权限检查，确保用户只能操作自己的项目；6. 添加项目软删除功能。"
           },
           {
@@ -124,7 +146,10 @@
             "title": "前端项目管理界面",
             "description": "开发项目列表、详情和配置页面",
             "status": "pending",
-            "dependencies": [4.1, 3.2],
+            "dependencies": [
+              4.1,
+              3.2
+            ],
             "details": "1. 创建项目列表页面（/projects），使用Card或Table组件展示项目；2. 实现项目创建对话框，使用Dialog和Form组件；3. 创建项目详情页面（/projects/{id}），展示项目信息和任务概览；4. 实现项目设置页面（/projects/{id}/settings），配置AI输出语言等参数；5. 添加项目搜索和筛选功能；6. 实现项目删除确认对话框；7. 使用面包屑导航提升用户体验。界面要求清晰直观，符合现代化设计标准。"
           }
         ]
@@ -134,7 +159,9 @@
         "title": "任务生成和管理系统",
         "description": "实现基于AI的任务生成和任务管理功能",
         "status": "pending",
-        "dependencies": [4],
+        "dependencies": [
+          4
+        ],
         "priority": "high",
         "details": "1. 设计任务数据模型和依赖关系；2. 实现AI任务生成功能；3. 实现任务CRUD操作；4. 实现任务状态管理；5. 前端实现任务管理界面；6. 实现任务依赖关系的可视化。",
         "testStrategy": "测试AI任务生成功能，验证任务的增删改查，测试任务状态更新和依赖关系管理",
@@ -144,7 +171,9 @@
             "title": "任务数据模型和AI生成API",
             "description": "设计任务数据结构并实现AI任务生成功能",
             "status": "pending",
-            "dependencies": [4.1],
+            "dependencies": [
+              4.1
+            ],
             "details": "1. 创建任务数据模型（id、title、description、status、priority、details、test_strategy、parent_id、project_id等）；2. 设计任务依赖关系表；3. 创建AI任务生成API（/api/projects/{project_id}/generate-tasks），接收项目描述，调用AI模型生成任务JSON；4. 实现任务格式模板的配置化，支持自定义任务JSON格式；5. 实现任务依赖关系的自动解析和验证；6. 添加任务生成的错误处理和重试机制。任务状态包括：pending、in-progress、done、review、deferred、cancelled。"
           },
           {
@@ -152,7 +181,9 @@
             "title": "任务管理后端API",
             "description": "开发任务CRUD和状态管理的完整API",
             "status": "pending",
-            "dependencies": [5.1],
+            "dependencies": [
+              5.1
+            ],
             "details": "1. 实现任务CRUD API（/api/projects/{project_id}/tasks）；2. 创建任务状态更新API（/api/tasks/{task_id}/status）；3. 实现任务依赖关系管理API；4. 创建任务搜索和筛选API；5. 实现任务批量操作API（批量状态更新、删除等）；6. 添加任务变更日志记录；7. 实现任务依赖检查，防止循环依赖；8. 创建任务统计API，支持按状态、优先级统计。"
           },
           {
@@ -160,7 +191,10 @@
             "title": "前端任务管理界面",
             "description": "开发完整的任务管理和可视化界面",
             "status": "pending",
-            "dependencies": [5.2, 4.2],
+            "dependencies": [
+              5.2,
+              4.2
+            ],
             "details": "1. 创建任务列表页面（/projects/{id}/tasks），支持表格和卡片两种视图；2. 实现任务生成界面，包含项目描述输入和生成按钮；3. 创建任务详情和编辑对话框；4. 实现任务状态的拖拽更新（看板视图）；5. 添加任务筛选和排序功能（按状态、优先级、依赖关系）；6. 实现任务依赖关系的可视化展示；7. 添加任务批量操作功能；8. 使用shadcn/ui的Badge、Progress等组件优化显示效果。支持任务的快速状态切换和批量管理。"
           }
         ]
@@ -170,7 +204,9 @@
         "title": "项目进展文档管理",
         "description": "实现项目进展MD文档的生成、存储和展示功能",
         "status": "pending",
-        "dependencies": [5],
+        "dependencies": [
+          5
+        ],
         "priority": "medium",
         "details": "1. 设计项目进展文档的数据存储；2. 实现进展文档的CRUD API；3. 前端实现Markdown文档的展示；4. 实现文档的版本管理；5. 为MCP工具提供文档更新接口。",
         "testStrategy": "测试进展文档的创建、编辑和展示，验证Markdown渲染效果",
@@ -180,7 +216,9 @@
             "title": "进展文档后端API",
             "description": "开发项目进展文档的存储和管理API",
             "status": "pending",
-            "dependencies": [5.2],
+            "dependencies": [
+              5.2
+            ],
             "details": "1. 设计进展文档数据模型（project_id、content、version、updated_at、updated_by等）；2. 实现文档CRUD API（/api/projects/{project_id}/progress）；3. 添加文档版本历史记录；4. 实现文档内容的验证和清理；5. 创建文档更新权限检查；6. 添加文档的备份和恢复功能。文档内容使用Markdown格式存储，支持版本对比。"
           },
           {
@@ -188,7 +226,10 @@
             "title": "前端Markdown展示组件",
             "description": "开发Markdown文档的展示和编辑界面",
             "status": "pending",
-            "dependencies": [6.1, 5.3],
+            "dependencies": [
+              6.1,
+              5.3
+            ],
             "details": "1. 集成Markdown解析和渲染库（如react-markdown）；2. 创建项目进展页面（/projects/{id}/progress）；3. 实现Markdown编辑器（支持预览模式）；4. 添加文档版本历史查看功能；5. 实现文档的导出功能（支持PDF、HTML）；6. 优化Markdown样式，确保在shadcn/ui主题下的美观展示；7. 添加文档目录导航。支持代码高亮、表格、图片等Markdown特性。"
           }
         ]
@@ -198,7 +239,9 @@
         "title": "MCP服务器开发",
         "description": "开发Model Context Protocol服务器，为AI编辑器提供任务管理工具",
         "status": "pending",
-        "dependencies": [6],
+        "dependencies": [
+          6
+        ],
         "priority": "high",
         "details": "1. 学习MCP协议规范；2. 使用FastMCP框架开发MCP服务器；3. 实现init、get_tasks、update_project等MCP工具；4. 配置MCP服务器的认证和权限；5. 测试与Claude、Cursor等编辑器的集成。注意：先使用context7的mcp工具获取MCP协议和FastMCP的最新文档。",
         "testStrategy": "测试MCP工具的正常调用，验证与主系统API的集成，测试在Claude Desktop中的使用",
@@ -208,7 +251,9 @@
             "title": "MCP服务器基础框架",
             "description": "搭建MCP服务器的基础架构和认证机制",
             "status": "pending",
-            "dependencies": [6.1],
+            "dependencies": [
+              6.1
+            ],
             "details": "1. 安装FastMCP框架和相关依赖；2. 创建MCP服务器项目结构；3. 实现API密钥认证机制；4. 配置MCP服务器的基础设置（端口、日志等）；5. 创建配置文件模板；6. 实现错误处理和日志记录；7. 设置MCP服务器的启动脚本。服务器需要支持STDIO和HTTP两种传输方式。"
           },
           {
@@ -216,7 +261,9 @@
             "title": "MCP工具实现",
             "description": "实现所有必需的MCP工具函数",
             "status": "pending",
-            "dependencies": [7.1],
+            "dependencies": [
+              7.1
+            ],
             "details": "1. 实现init工具：创建本地配置文件，包含API地址、密钥、项目ID等；2. 实现get_tasks工具：获取指定项目的所有任务列表；3. 实现get_task工具：获取指定任务的详细信息；4. 实现set_task_status工具：更新任务状态；5. 实现update_project工具：更新项目进展文档；6. 实现get_progress工具：获取项目进展情况；7. 所有工具都要包含详细的参数说明和错误处理。每个工具要提供清晰的使用说明和示例。"
           },
           {
@@ -224,7 +271,9 @@
             "title": "MCP服务器部署和测试",
             "description": "部署MCP服务器并测试与AI编辑器的集成",
             "status": "pending",
-            "dependencies": [7.2],
+            "dependencies": [
+              7.2
+            ],
             "details": "1. 创建MCP服务器的部署脚本；2. 配置Claude Desktop的MCP服务器连接；3. 编写MCP工具的使用文档和示例；4. 测试所有MCP工具的功能；5. 验证与主系统API的数据一致性；6. 创建故障排除指南；7. 准备MCP服务器的生产环境配置。确保MCP服务器能够稳定运行并正确响应AI编辑器的调用。"
           }
         ]
@@ -234,7 +283,9 @@
         "title": "系统集成和优化",
         "description": "完成系统的最终集成、性能优化和部署准备",
         "status": "pending",
-        "dependencies": [7],
+        "dependencies": [
+          7
+        ],
         "priority": "medium",
         "details": "1. 完善前端的侧边栏和顶部导航布局；2. 优化系统性能和用户体验；3. 完善错误处理和用户反馈；4. 编写部署文档；5. 进行端到端测试。",
         "testStrategy": "进行完整的系统功能测试，验证前后端集成，测试MCP工具的端到端流程",
@@ -244,7 +295,10 @@
             "title": "前端布局和导航完善",
             "description": "完善前端的整体布局和导航系统",
             "status": "pending",
-            "dependencies": [6.2, 7.3],
+            "dependencies": [
+              6.2,
+              7.3
+            ],
             "details": "1. 完善侧边栏导航，包含项目管理、任务管理、模型配置、API密钥、系统设置等菜单；2. 实现顶部导航栏，包含用户信息、通知、设置等；3. 添加面包屑导航提升用户体验；4. 实现响应式布局，确保移动端兼容性；5. 优化加载状态和骨架屏；6. 添加快捷键支持；7. 实现主题切换功能（明暗模式）。确保导航清晰直观，符合现代Web应用的设计标准。"
           },
           {
@@ -252,11 +306,18 @@
             "title": "系统优化和文档",
             "description": "优化系统性能并编写完整的部署和使用文档",
             "status": "pending",
-            "dependencies": [8.1],
+            "dependencies": [
+              8.1
+            ],
             "details": "1. 优化前端性能（代码分割、懒加载、缓存策略）；2. 优化后端性能（数据库查询优化、接口缓存）；3. 完善错误处理和用户友好的错误提示；4. 编写系统部署文档（Docker、环境配置）；5. 编写用户使用手册；6. 编写MCP工具的配置和使用指南；7. 进行安全性检查和漏洞修复；8. 添加系统监控和日志记录。确保系统稳定可靠，文档完善易懂。"
           }
         ]
       }
-    ]
+    ],
+    "metadata": {
+      "created": "2025-09-12T14:36:10.217Z",
+      "updated": "2025-09-12T14:46:15.713Z",
+      "description": "Tasks for master context"
+    }
   }
 }
