@@ -2,7 +2,7 @@
 Project model
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, Enum, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import enum
@@ -28,6 +28,15 @@ class Project(Base):
     repository_url = Column(String(500), nullable=True)
     documentation_url = Column(String(500), nullable=True)
     is_public = Column(Boolean, default=False)
+    settings = Column(JSON, nullable=True, default=lambda: {
+        "ai_output_language": "中文",
+        "task_format_template": "standard",
+        "auto_generate_tasks": True,
+        "default_priority": "medium",
+        "enable_notifications": True,
+        "custom_fields": {}
+    })
+    is_deleted = Column(Boolean, default=False)  # Soft delete
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

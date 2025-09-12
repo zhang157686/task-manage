@@ -3,6 +3,7 @@
 from app.services.auth import AuthService
 from app.services.access_key import AccessKeyService
 from app.services.ai_model import ai_model_service
+from app.services.project import project_service
 
 # Create service instances
 auth_service = AuthService()
@@ -12,4 +13,5 @@ __all__ = [
     "auth_service",
     "access_key_service", 
     "ai_model_service",
+    "project_service",
 ]

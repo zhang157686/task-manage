@@ -34,6 +34,18 @@ from app.schemas.ai_model import (
     AIModelTestRequest,
     AIModelTestResponse,
 )
+from app.schemas.project import (
+    ProjectBase,
+    ProjectCreate,
+    ProjectUpdate,
+    ProjectResponse,
+    ProjectStats,
+    ProjectWithStats,
+    ProjectListItem,
+    ProjectSettings,
+    ProjectSettingsUpdate,
+    ProjectStatus,
+)
 
 __all__ = [
     "UserBase",
@@ -62,4 +74,14 @@ __all__ = [
     "AIModelResponse",
     "AIModelTestRequest",
     "AIModelTestResponse",
+    "ProjectBase",
+    "ProjectCreate",
+    "ProjectUpdate",
+    "ProjectResponse",
+    "ProjectStats",
+    "ProjectWithStats",
+    "ProjectListItem",
+    "ProjectSettings",
+    "ProjectSettingsUpdate",
+    "ProjectStatus",
 ]

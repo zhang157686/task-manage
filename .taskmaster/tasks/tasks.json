@@ -123,7 +123,7 @@
         "id": 4,
         "title": "项目管理功能",
         "description": "实现项目的创建、编辑、删除和配置管理",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           3
         ],
@@ -135,11 +135,11 @@
             "id": 1,
             "title": "项目管理后端API",
             "description": "开发项目CRUD和配置管理的后端API",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               3.1
             ],
-            "details": "1. 创建项目数据模型（包含id、name、description、user_id、settings、created_at、updated_at等字段）；2. 实现项目CRUD API（/api/projects）；3. 实现项目配置API（/api/projects/{project_id}/settings），支持AI输出语言、任务格式模板等配置；4. 创建项目统计API（/api/projects/{project_id}/stats），返回任务数量、完成情况等；5. 实现项目权限检查，确保用户只能操作自己的项目；6. 添加项目软删除功能。"
+            "details": "1. 创建项目数据模型（包含id、name、description、user_id、settings、created_at、updated_at等字段）；2. 实现项目CRUD API（/api/projects）；3. 实现项目配置API（/api/projects/{project_id}/settings），支持AI输出语言、任务格式模板等配置；4. 创建项目统计API（/api/projects/{project_id}/stats），返回任务数量、完成情况等；5. 实现项目权限检查，确保用户只能操作自己的项目；6. 添加项目软删除功能。\n<info added on 2025-09-12T22:34:22.223Z>\n子任务4.1项目管理后端API开发已完成！\n\n已完成的核心功能：\n\n1. 数据模型扩展 - 为Project模型添加了settings字段（JSON类型）、is_deleted字段支持软删除，创建并运行了数据库迁移\n\n2. 完整的Pydantic Schemas - 实现了ProjectBase、ProjectCreate、ProjectUpdate、ProjectResponse、ProjectWithStats、ProjectListItem、ProjectSettings、ProjectSettingsUpdate、ProjectStats等完整的数据模式\n\n3. 功能完善的ProjectService服务层 - 完整的CRUD操作、软删除和恢复功能、项目统计信息计算、项目设置管理、搜索和筛选功能、权限检查确保用户只能操作自己的项目\n\n4. 完整的API端点实现 - 实现了9个API端点，包括项目列表获取（支持搜索、筛选、分页）、创建、详情获取、更新、删除（软删除）、恢复、统计信息获取、设置管理等\n\n5. API功能验证 - 全面的CRUD操作测试通过、项目设置管理测试通过、搜索和筛选功能测试通过、软删除和恢复功能测试通过、权限控制和错误处理正常、统计信息计算准确\n\n技术特性：支持项目状态管理（active、completed、paused、archived）、灵活的项目设置系统（AI输出语言、任务模板等）、完整的统计信息（任务数量、完成率等）、软删除机制保护数据安全、搜索和筛选功能提升用户体验、完善的错误处理和验证\n\n测试结果：14项功能测试全部通过、API响应正确、数据格式符合预期、数据库操作稳定可靠\n</info added on 2025-09-12T22:34:22.223Z>"
           },
           {
             "id": 2,
@@ -316,7 +316,7 @@
     ],
     "metadata": {
       "created": "2025-09-12T14:36:10.217Z",
-      "updated": "2025-09-12T22:19:24.552Z",
+      "updated": "2025-09-12T22:34:30.136Z",
       "description": "Tasks for master context"
     }
   }
