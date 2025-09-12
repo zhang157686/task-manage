@@ -26,6 +26,14 @@ from app.schemas.access_key import (
     AccessKeyListResponse,
     AccessKeyStats,
 )
+from app.schemas.ai_model import (
+    AIModelBase,
+    AIModelCreate,
+    AIModelUpdate,
+    AIModelResponse,
+    AIModelTestRequest,
+    AIModelTestResponse,
+)
 
 __all__ = [
     "UserBase",
@@ -48,4 +56,10 @@ __all__ = [
     "AccessKeyResponse",
     "AccessKeyListResponse",
     "AccessKeyStats",
+    "AIModelBase",
+    "AIModelCreate",
+    "AIModelUpdate",
+    "AIModelResponse",
+    "AIModelTestRequest",
+    "AIModelTestResponse",
 ]
