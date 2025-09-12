@@ -114,3 +114,43 @@ def get_optional_current_user(
         
     except Exception:
         return None
+
+
+def get_current_user_by_api_key(
+    db: Session = Depends(get_db),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+) -> User:
+    """
+    Get current user by API key authentication
+    """
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API key required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    from app.services.access_key import AccessKeyService
+    
+    # Try API key authentication
+    user = AccessKeyService.validate_access_key(db, credentials.credentials)
+    if user:
+        return user
+    
+    # If API key fails, try JWT token
+    try:
+        payload = AuthService.verify_token(credentials.credentials, "access")
+        if payload is not None:
+            user_id: int = payload.get("sub")
+            if user_id is not None:
+                user = AuthService.get_user_by_id(db, user_id=int(user_id))
+                if user and user.is_active:
+                    return user
+    except Exception:
+        pass
+    
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid API key or token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )

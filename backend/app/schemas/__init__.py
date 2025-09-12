@@ -18,6 +18,14 @@ from app.schemas.auth import (
     ResetPasswordRequest,
     MessageResponse,
 )
+from app.schemas.access_key import (
+    AccessKeyBase,
+    AccessKeyCreate,
+    AccessKeyUpdate,
+    AccessKeyResponse,
+    AccessKeyListResponse,
+    AccessKeyStats,
+)
 
 __all__ = [
     "UserBase",
@@ -34,4 +42,10 @@ __all__ = [
     "ChangePasswordRequest",
     "ResetPasswordRequest",
     "MessageResponse",
+    "AccessKeyBase",
+    "AccessKeyCreate",
+    "AccessKeyUpdate",
+    "AccessKeyResponse",
+    "AccessKeyListResponse",
+    "AccessKeyStats",
 ]
