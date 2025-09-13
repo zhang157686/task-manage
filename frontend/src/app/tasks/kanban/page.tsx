@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, Plus, MoreHorizontal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Plus, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -14,32 +15,29 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high';
-  assignee?: string;
-  dueDate?: string;
-}
+import { TaskListItem, TaskStatus, TaskPriority } from '@/types/task';
+import { tasksService } from '@/services/tasks';
+import { getTaskPriorityOption } from '@/types/task';
 
 interface Column {
-  id: string;
+  id: TaskStatus;
   title: string;
-  tasks: Task[];
+  tasks: TaskListItem[];
   color: string;
 }
 
 export default function TaskKanbanPage() {
-  const [columns] = useState<Column[]>([
+  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<TaskListItem[]>([]);
+  const [columns, setColumns] = useState<Column[]>([
     {
-      id: 'todo',
+      id: 'pending',
       title: '待处理',
       color: 'bg-gray-100',
       tasks: []
     },
     {
-      id: 'in-progress',
+      id: 'in_progress',
       title: '进行中',
       color: 'bg-blue-100',
       tasks: []
@@ -58,31 +56,75 @@ export default function TaskKanbanPage() {
     }
   ]);
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  const loadTasks = async () => {
+    try {
+      setLoading(true);
+      const data = await tasksService.getTasks();
+      setTasks(data);
+      
+      // Group tasks by status
+      const updatedColumns = columns.map(column => ({
+        ...column,
+        tasks: data.filter(task => task.status === column.id)
+      }));
+      setColumns(updatedColumns);
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+      toast.error('加载任务失败');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return '高';
-      case 'medium':
-        return '中';
-      case 'low':
-        return '低';
-      default:
-        return '未知';
+  const handleTaskStatusChange = async (taskId: number, newStatus: TaskStatus) => {
+    try {
+      await tasksService.updateTaskStatus(taskId, newStatus);
+      toast.success('任务状态已更新');
+      loadTasks();
+    } catch (error: any) {
+      console.error('Failed to update task status:', error);
+      toast.error(error.response?.data?.detail || '更新任务状态失败');
     }
   };
+
+  const handleTaskDelete = async (taskId: number) => {
+    if (!confirm('确定要删除这个任务吗？')) {
+      return;
+    }
+
+    try {
+      await tasksService.deleteTask(taskId);
+      toast.success('任务删除成功');
+      loadTasks();
+    } catch (error: any) {
+      console.error('Failed to delete task:', error);
+      toast.error(error.response?.data?.detail || '删除任务失败');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-CN', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-600">加载任务中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -102,10 +144,18 @@ export default function TaskKanbanPage() {
             </p>
           </div>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          添加任务
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={loadTasks}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            刷新
+          </Button>
+          <Button asChild>
+            <Link href="/projects/new">
+              <Plus className="h-4 w-4 mr-2" />
+              创建项目
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Kanban Board */}
@@ -128,57 +178,74 @@ export default function TaskKanbanPage() {
                   <p className="text-gray-400 text-xs mt-1">拖拽任务到此处</p>
                 </div>
               ) : (
-                column.tasks.map((task) => (
-                  <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-sm font-medium line-clamp-2">
-                          {task.title}
-                        </CardTitle>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>编辑</DropdownMenuItem>
-                            <DropdownMenuItem>删除</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
-                        {task.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <Badge className={getPriorityColor(task.priority)} variant="secondary">
-                          {getPriorityLabel(task.priority)}
-                        </Badge>
-                        {task.assignee && (
-                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-xs text-white font-medium">
-                              {task.assignee.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {task.dueDate && (
-                        <p className="text-xs text-gray-500 mt-2">
-                          截止: {task.dueDate}
+                column.tasks.map((task) => {
+                  const priorityOption = getTaskPriorityOption(task.priority);
+                  return (
+                    <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
+                          <CardTitle className="text-sm font-medium line-clamp-2">
+                            {task.title}
+                          </CardTitle>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleTaskStatusChange(task.id, 'pending')}>
+                                标记为待处理
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleTaskStatusChange(task.id, 'in_progress')}>
+                                标记为进行中
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleTaskStatusChange(task.id, 'review')}>
+                                标记为待审核
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleTaskStatusChange(task.id, 'done')}>
+                                标记为已完成
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleTaskDelete(task.id)} className="text-red-600">
+                                删除
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                          {task.description || '无描述'}
                         </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
+                        <div className="flex items-center justify-between">
+                          <Badge className={priorityOption?.color} variant="secondary">
+                            {priorityOption?.label || task.priority}
+                          </Badge>
+                          {task.subtask_count > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {task.subtask_count} 子任务
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                          <span>创建: {formatDate(task.created_at)}</span>
+                          {task.due_date && (
+                            <span>截止: {formatDate(task.due_date)}</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
               )}
             </div>
 
             {/* Add Task Button */}
-            <Button variant="outline" size="sm" className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              添加任务
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/projects/new">
+                <Plus className="h-4 w-4 mr-2" />
+                创建项目
+              </Link>
             </Button>
           </div>
         ))}
@@ -195,10 +262,10 @@ export default function TaskKanbanPage() {
               </p>
               <div className="flex space-x-2">
                 <Button asChild>
-                  <Link href="/tasks/generate">生成任务</Link>
+                  <Link href="/projects/new">创建项目</Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href="/projects/new">创建项目</Link>
+                  <Link href="/tasks">任务列表</Link>
                 </Button>
               </div>
             </div>
