@@ -2,7 +2,10 @@
 
 import { usePathname } from 'next/navigation';
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { TopNav } from "@/components/top-nav";
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
+import { PageLoadingSpinner } from "@/components/loading-states";
 import { useAuth } from "@/contexts/auth-context";
 
 // Pages that don't require authentication
@@ -16,11 +19,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Show loading spinner while checking authentication
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <PageLoadingSpinner />;
   }
 
   // For public pages, render without sidebar
@@ -40,17 +39,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="flex-1">
-        <div className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold">TaskMaster AI</h1>
-          </div>
-        </div>
-        <div className="flex-1 space-y-4 p-4 pt-6">
+      <main className="flex-1 flex flex-col">
+        <TopNav />
+        <div className="flex-1 space-y-4 p-4 pt-6 overflow-auto">
           {children}
         </div>
       </main>
+      <KeyboardShortcuts />
     </SidebarProvider>
   );
 }

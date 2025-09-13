@@ -11,6 +11,11 @@ import {
   PieChart,
   Send,
   SquareTerminal,
+  Settings,
+  FileText,
+  BarChart3,
+  Key,
+  Zap,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -52,6 +57,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "创建项目",
             url: "/projects/new",
           },
+          {
+            title: "项目统计",
+            url: "/projects/stats",
+          },
         ],
       },
       {
@@ -67,12 +76,50 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "任务生成",
             url: "/tasks/generate",
           },
+          {
+            title: "任务看板",
+            url: "/tasks/kanban",
+          },
         ],
       },
       {
-        title: "设置",
+        title: "进展文档",
         url: "#",
-        icon: BookOpen,
+        icon: FileText,
+        items: [
+          {
+            title: "文档管理",
+            url: "/progress",
+          },
+          {
+            title: "导出报告",
+            url: "/progress/export",
+          },
+        ],
+      },
+      {
+        title: "数据分析",
+        url: "#",
+        icon: BarChart3,
+        items: [
+          {
+            title: "项目概览",
+            url: "/analytics/overview",
+          },
+          {
+            title: "任务统计",
+            url: "/analytics/tasks",
+          },
+          {
+            title: "效率分析",
+            url: "/analytics/efficiency",
+          },
+        ],
+      },
+      {
+        title: "系统设置",
+        url: "#",
+        icon: Settings,
         items: [
           {
             title: "AI模型配置",
@@ -82,17 +129,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "API密钥",
             url: "/settings/api-keys",
           },
+          {
+            title: "MCP工具",
+            url: "/settings/mcp",
+          },
+          {
+            title: "系统偏好",
+            url: "/settings/preferences",
+          },
         ],
       },
     ],
     navSecondary: [
       {
-        title: "支持",
+        title: "快捷键",
+        url: "#",
+        icon: Zap,
+      },
+      {
+        title: "帮助文档",
         url: "#",
         icon: LifeBuoy,
       },
       {
-        title: "反馈",
+        title: "反馈建议",
         url: "#",
         icon: Send,
       },

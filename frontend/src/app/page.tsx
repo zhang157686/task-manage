@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bot, FileText, Settings, Users } from "lucide-react";
+import { Bot, FileText, Settings, Users, Plus, Zap, BarChart3 } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -81,17 +82,29 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Button className="w-full justify-start" variant="outline">
-                <FileText className="mr-2 h-4 w-4" />
-                创建新项目
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href="/projects/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  创建新项目
+                </Link>
               </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Settings className="mr-2 h-4 w-4" />
-                配置AI模型
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href="/settings/models">
+                  <Settings className="mr-2 h-4 w-4" />
+                  配置AI模型
+                </Link>
               </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Bot className="mr-2 h-4 w-4" />
-                生成任务
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href="/tasks/generate">
+                  <Bot className="mr-2 h-4 w-4" />
+                  生成任务
+                </Link>
+              </Button>
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href="/analytics/overview">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  查看分析
+                </Link>
               </Button>
             </div>
           </CardContent>
