@@ -137,6 +137,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "系统偏好",
             url: "/settings/preferences",
           },
+          {
+            title: "系统调试",
+            url: "/debug",
+          },
         ],
       },
     ],

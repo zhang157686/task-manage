@@ -1,9 +1,55 @@
+'use client';
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bot, FileText, Settings, Users, Plus, Zap, BarChart3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Bot, FileText, Settings, Users, Plus, Zap, BarChart3, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Home() {
+  const { user, isAuthenticated } = useAuth();
+  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+
+  useEffect(() => {
+    const checkApiStatus = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/health');
+        if (response.ok) {
+          setApiStatus('connected');
+        } else {
+          setApiStatus('disconnected');
+        }
+      } catch {
+        setApiStatus('disconnected');
+      }
+    };
+
+    checkApiStatus();
+  }, []);
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'connected':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'disconnected':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'connected':
+        return '正常';
+      case 'disconnected':
+        return '断开';
+      default:
+        return '检查中';
+    }
+  };
   return (
     <div className="space-y-6">
       <div>
@@ -119,21 +165,63 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
+              <span className="text-sm">用户状态</span>
+              <div className="flex items-center space-x-2">
+                {isAuthenticated ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-sm text-green-600">已登录 ({user?.username})</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    <span className="text-sm text-red-600">未登录</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
               <span className="text-sm">前端服务</span>
-              <span className="text-sm text-green-600">运行中</span>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-green-600">运行中</span>
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">后端API</span>
-              <span className="text-sm text-red-600">未连接</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">数据库</span>
-              <span className="text-sm text-red-600">未连接</span>
+              <div className="flex items-center space-x-2">
+                {getStatusIcon(apiStatus)}
+                <span className={`text-sm ${
+                  apiStatus === 'connected' ? 'text-green-600' : 
+                  apiStatus === 'disconnected' ? 'text-red-600' : 'text-yellow-600'
+                }`}>
+                  {getStatusText(apiStatus)}
+                </span>
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">AI服务</span>
-              <span className="text-sm text-yellow-600">未配置</span>
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm text-yellow-600">需要配置</span>
+              </div>
             </div>
+            
+            {!isAuthenticated && (
+              <div className="pt-4 border-t">
+                <p className="text-sm text-gray-600 mb-3">
+                  请先登录以使用完整功能
+                </p>
+                <div className="space-y-2">
+                  <Button asChild size="sm" className="w-full">
+                    <Link href="/login">立即登录</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline" className="w-full">
+                    <Link href="/debug">系统调试</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
