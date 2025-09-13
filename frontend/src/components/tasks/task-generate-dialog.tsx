@@ -316,7 +316,7 @@ export function TaskGenerateDialog({
                 <span className="font-medium">Low priority:</span> {priorityDistribution.low}
               </div>
               <div>
-                <span className="font-medium">Language:</span> {project.settings.ai_output_language}
+                <span className="font-medium">Language:</span> {project.settings?.ai_output_language || '中文'}
               </div>
             </div>
           </CardContent>

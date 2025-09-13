@@ -85,11 +85,24 @@ export default function ProjectTasksPage() {
 
   useEffect(() => {
     if (projectId) {
-      loadProject();
-      loadTasks();
-      loadTaskStats();
+      loadInitialData();
     }
   }, [projectId]);
+
+  const loadInitialData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadProject(),
+        loadTasks(false), // Don't show tasks loading during initial load
+        loadTaskStats()
+      ]);
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadProject = async () => {
     try {
@@ -97,21 +110,23 @@ export default function ProjectTasksPage() {
       setProject(data);
     } catch (error) {
       console.error('Failed to load project:', error);
-      toast.error('Failed to load project');
+      toast.error('加载项目失败');
       router.push('/projects');
+      throw error;
     }
   };
 
-  const loadTasks = async () => {
+  const loadTasks = async (showLoading = true) => {
     try {
-      setTasksLoading(true);
+      if (showLoading) setTasksLoading(true);
       const data = await tasksService.getProjectTasks(projectId);
       setTasks(data);
     } catch (error) {
       console.error('Failed to load tasks:', error);
-      toast.error('Failed to load tasks');
+      toast.error('加载任务失败');
+      throw error;
     } finally {
-      setTasksLoading(false);
+      if (showLoading) setTasksLoading(false);
     }
   };
 
@@ -121,19 +136,20 @@ export default function ProjectTasksPage() {
       setTaskStats(stats);
     } catch (error) {
       console.error('Failed to load task stats:', error);
+      throw error;
     }
   };
 
   const handleCreateTask = async (taskData: any) => {
     try {
       await tasksService.createProjectTask(projectId, taskData);
-      toast.success('Task created successfully');
+      toast.success('任务创建成功');
       setIsCreateDialogOpen(false);
-      loadTasks();
+      loadTasks(true);
       loadTaskStats();
     } catch (error: any) {
       console.error('Failed to create task:', error);
-      toast.error(error.response?.data?.detail || 'Failed to create task');
+      toast.error(error.response?.data?.detail || '创建任务失败');
     }
   };
 
@@ -141,62 +157,62 @@ export default function ProjectTasksPage() {
     try {
       const result = await tasksService.generateTasks(projectId, request);
       if (result.success) {
-        toast.success(`Successfully generated ${result.total_generated} tasks`);
+        toast.success(`成功生成了 ${result.total_generated} 个任务`);
         setIsGenerateDialogOpen(false);
-        loadTasks();
+        loadTasks(true);
         loadTaskStats();
       } else {
         toast.error(result.message);
       }
     } catch (error: any) {
       console.error('Failed to generate tasks:', error);
-      toast.error(error.response?.data?.detail || 'Failed to generate tasks');
+      toast.error(error.response?.data?.detail || '生成任务失败');
     }
   };
 
   const handleTaskUpdate = async (taskId: number, updates: any) => {
     try {
       await tasksService.updateTask(taskId, updates);
-      toast.success('Task updated successfully');
-      loadTasks();
+      toast.success('任务更新成功');
+      loadTasks(true);
       loadTaskStats();
     } catch (error: any) {
       console.error('Failed to update task:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update task');
+      toast.error(error.response?.data?.detail || '更新任务失败');
     }
   };
 
   const handleTaskStatusChange = async (taskId: number, status: any) => {
     try {
       await tasksService.updateTaskStatus(taskId, status);
-      toast.success('Task status updated');
-      loadTasks();
+      toast.success('任务状态已更新');
+      loadTasks(true);
       loadTaskStats();
     } catch (error: any) {
       console.error('Failed to update task status:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update task status');
+      toast.error(error.response?.data?.detail || '更新任务状态失败');
     }
   };
 
   const handleTaskDelete = async (taskId: number) => {
-    if (!confirm('Are you sure you want to delete this task?')) {
+    if (!confirm('确定要删除这个任务吗？')) {
       return;
     }
 
     try {
       await tasksService.deleteTask(taskId);
-      toast.success('Task deleted successfully');
-      loadTasks();
+      toast.success('任务删除成功');
+      loadTasks(true);
       loadTaskStats();
     } catch (error: any) {
       console.error('Failed to delete task:', error);
-      toast.error(error.response?.data?.detail || 'Failed to delete task');
+      toast.error(error.response?.data?.detail || '删除任务失败');
     }
   };
 
   const handleBatchStatusUpdate = async (status: any) => {
     if (selectedTasks.length === 0) {
-      toast.error('Please select tasks to update');
+      toast.error('请选择要更新的任务');
       return;
     }
 
@@ -205,13 +221,13 @@ export default function ProjectTasksPage() {
         task_ids: selectedTasks,
         status
       });
-      toast.success(`Updated ${selectedTasks.length} tasks`);
+      toast.success(`已更新 ${selectedTasks.length} 个任务`);
       setSelectedTasks([]);
-      loadTasks();
+      loadTasks(true);
       loadTaskStats();
     } catch (error: any) {
       console.error('Failed to batch update tasks:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update tasks');
+      toast.error(error.response?.data?.detail || '更新任务失败');
     }
   };
 
@@ -234,7 +250,7 @@ export default function ProjectTasksPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Loading tasks...</p>
+            <p className="mt-2 text-sm text-gray-600">加载任务中...</p>
           </div>
         </div>
       </div>
@@ -245,10 +261,10 @@ export default function ProjectTasksPage() {
     return (
       <div className="container mx-auto py-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Project not found</h2>
-          <p className="text-gray-600 mt-2">The project you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-gray-900">项目未找到</h2>
+          <p className="text-gray-600 mt-2">您查找的项目不存在。</p>
           <Button asChild className="mt-4">
-            <Link href="/projects">Back to Projects</Link>
+            <Link href="/projects">返回项目列表</Link>
           </Button>
         </div>
       </div>
@@ -261,7 +277,7 @@ export default function ProjectTasksPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/projects">Projects</BreadcrumbLink>
+            <BreadcrumbLink href="/projects">项目</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -269,7 +285,7 @@ export default function ProjectTasksPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Tasks</BreadcrumbPage>
+            <BreadcrumbPage>任务</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -277,28 +293,28 @@ export default function ProjectTasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Tasks</h1>
-          <p className="text-gray-600">Manage tasks for {project.name}</p>
+          <h1 className="text-3xl font-bold">任务</h1>
+          <p className="text-gray-600">管理 {project.name} 的任务</p>
         </div>
         
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={() => loadTasks()}>
+          <Button variant="outline" onClick={() => loadTasks(true)}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            刷新
           </Button>
           
           <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Wand2 className="h-4 w-4 mr-2" />
-                Generate Tasks
+                生成任务
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Generate Tasks with AI</DialogTitle>
+                <DialogTitle>使用AI生成任务</DialogTitle>
                 <DialogDescription>
-                  Use AI to automatically generate tasks based on your project description.
+                  基于您的项目描述，使用AI自动生成任务。
                 </DialogDescription>
               </DialogHeader>
               <TaskGenerateDialog
@@ -313,14 +329,14 @@ export default function ProjectTasksPage() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Task
+                添加任务
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Create New Task</DialogTitle>
+                <DialogTitle>创建新任务</DialogTitle>
                 <DialogDescription>
-                  Add a new task to this project.
+                  为此项目添加一个新任务。
                 </DialogDescription>
               </DialogHeader>
               <TaskCreateDialog
@@ -339,43 +355,43 @@ export default function ProjectTasksPage() {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{taskStats.total_tasks}</div>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">总计</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-gray-600">{taskStats.pending_tasks}</div>
-              <p className="text-xs text-muted-foreground">Pending</p>
+              <p className="text-xs text-muted-foreground">待处理</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-600">{taskStats.in_progress_tasks}</div>
-              <p className="text-xs text-muted-foreground">In Progress</p>
+              <p className="text-xs text-muted-foreground">进行中</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-yellow-600">{taskStats.review_tasks}</div>
-              <p className="text-xs text-muted-foreground">Review</p>
+              <p className="text-xs text-muted-foreground">待审核</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-600">{taskStats.done_tasks}</div>
-              <p className="text-xs text-muted-foreground">Done</p>
+              <p className="text-xs text-muted-foreground">已完成</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-red-600">{taskStats.blocked_tasks}</div>
-              <p className="text-xs text-muted-foreground">Blocked</p>
+              <p className="text-xs text-muted-foreground">已阻塞</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-gray-400">{taskStats.cancelled_tasks}</div>
-              <p className="text-xs text-muted-foreground">Cancelled</p>
+              <p className="text-xs text-muted-foreground">已取消</p>
             </CardContent>
           </Card>
         </div>
@@ -387,7 +403,7 @@ export default function ProjectTasksPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search tasks..."
+              placeholder="搜索任务..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8"
@@ -399,7 +415,7 @@ export default function ProjectTasksPage() {
             onClick={() => setIsFiltersOpen(!isFiltersOpen)}
           >
             <Filter className="h-4 w-4 mr-2" />
-            Filters
+            筛选
           </Button>
         </div>
 
@@ -408,31 +424,31 @@ export default function ProjectTasksPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  {selectedTasks.length} selected
+                  已选择 {selectedTasks.length} 个
                   <MoreHorizontal className="h-4 w-4 ml-2" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>Batch Actions</DropdownMenuLabel>
+                <DropdownMenuLabel>批量操作</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleBatchStatusUpdate('pending')}>
-                  Mark as Pending
+                  标记为待处理
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleBatchStatusUpdate('in_progress')}>
-                  Mark as In Progress
+                  标记为进行中
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleBatchStatusUpdate('review')}>
-                  Mark as Review
+                  标记为待审核
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleBatchStatusUpdate('done')}>
-                  Mark as Done
+                  标记为已完成
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleBatchStatusUpdate('blocked')}>
-                  Mark as Blocked
+                  标记为已阻塞
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleBatchStatusUpdate('cancelled')}>
-                  Mark as Cancelled
+                  标记为已取消
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

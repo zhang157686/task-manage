@@ -65,7 +65,7 @@ export default function ProjectDetailPage() {
       setProject(data);
     } catch (error) {
       console.error('Failed to load project:', error);
-      toast.error('Failed to load project');
+      toast.error('加载项目失败');
       router.push('/projects');
     } finally {
       setLoading(false);
@@ -75,27 +75,27 @@ export default function ProjectDetailPage() {
   const handleUpdateProject = async (data: any) => {
     try {
       await projectsService.updateProject(projectId, data);
-      toast.success('Project updated successfully');
+      toast.success('项目更新成功');
       setIsEditDialogOpen(false);
       loadProject();
     } catch (error: any) {
       console.error('Failed to update project:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update project');
+      toast.error(error.response?.data?.detail || '更新项目失败');
     }
   };
 
   const handleDeleteProject = async () => {
-    if (!project || !confirm(`Are you sure you want to delete "${project.name}"?`)) {
+    if (!project || !confirm(`确定要删除项目"${project.name}"吗？`)) {
       return;
     }
 
     try {
       await projectsService.deleteProject(project.id);
-      toast.success('Project deleted successfully');
+      toast.success('项目删除成功');
       router.push('/projects');
     } catch (error: any) {
       console.error('Failed to delete project:', error);
-      toast.error(error.response?.data?.detail || 'Failed to delete project');
+      toast.error(error.response?.data?.detail || '删除项目失败');
     }
   };
 
@@ -199,9 +199,9 @@ export default function ProjectDetailPage() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Edit Project</DialogTitle>
+                <DialogTitle>编辑项目</DialogTitle>
                 <DialogDescription>
-                  Update the project information and settings.
+                  更新项目信息和设置。
                 </DialogDescription>
               </DialogHeader>
               <ProjectForm
@@ -215,18 +215,18 @@ export default function ProjectDetailPage() {
           <Button variant="outline" asChild>
             <Link href={`/projects/${project.id}/settings`}>
               <Settings className="h-4 w-4 mr-2" />
-              Settings
+              设置
             </Link>
           </Button>
 
           <Button variant="outline" onClick={handleDuplicateProject}>
             <Copy className="h-4 w-4 mr-2" />
-            Duplicate
+            复制
           </Button>
 
           <Button variant="outline" onClick={handleDeleteProject}>
             <Trash2 className="h-4 w-4 mr-2" />
-            Delete
+            删除
           </Button>
         </div>
       </div>
@@ -235,33 +235,33 @@ export default function ProjectDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">总任务数</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{project.stats.total_tasks}</div>
             <p className="text-xs text-muted-foreground">
-              {project.stats.pending_tasks} pending, {project.stats.in_progress_tasks} in progress
+              {project.stats.pending_tasks} 待处理，{project.stats.in_progress_tasks} 进行中
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">已完成</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{project.stats.completed_tasks}</div>
             <p className="text-xs text-muted-foreground">
-              {project.stats.completion_percentage.toFixed(1)}% completion rate
+              {project.stats.completion_percentage.toFixed(1)}% 完成率
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Created</CardTitle>
+            <CardTitle className="text-sm font-medium">创建时间</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -274,17 +274,17 @@ export default function ProjectDetailPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Activity</CardTitle>
+            <CardTitle className="text-sm font-medium">最近活动</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {project.stats.last_activity ? 'Recent' : 'None'}
+              {project.stats.last_activity ? '最近' : '无'}
             </div>
             <p className="text-xs text-muted-foreground">
               {project.stats.last_activity
                 ? formatDate(project.stats.last_activity)
-                : 'No recent activity'
+                : '暂无活动'
               }
             </p>
           </CardContent>
@@ -295,15 +295,15 @@ export default function ProjectDetailPage() {
       {project.stats.total_tasks > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Progress Overview</CardTitle>
+            <CardTitle>进度概览</CardTitle>
             <CardDescription>
-              Task completion progress for this project
+              该项目的任务完成进度
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Progress</span>
+                <span>进度</span>
                 <span>{project.stats.completion_percentage.toFixed(1)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
@@ -313,8 +313,8 @@ export default function ProjectDetailPage() {
                 />
               </div>
               <div className="flex justify-between text-xs text-gray-500">
-                <span>{project.stats.completed_tasks} completed</span>
-                <span>{project.stats.total_tasks - project.stats.completed_tasks} remaining</span>
+                <span>{project.stats.completed_tasks} 已完成</span>
+                <span>{project.stats.total_tasks - project.stats.completed_tasks} 剩余</span>
               </div>
             </div>
           </CardContent>
@@ -326,28 +326,28 @@ export default function ProjectDetailPage() {
         {/* Project Details */}
         <Card>
           <CardHeader>
-            <CardTitle>Project Details</CardTitle>
+            <CardTitle>项目详情</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Status</h4>
+              <h4 className="text-sm font-medium text-gray-500">状态</h4>
               <div className="mt-1">
                 {getStatusBadge(project.status)}
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Visibility</h4>
-              <p className="mt-1">{project.is_public ? 'Public' : 'Private'}</p>
+              <h4 className="text-sm font-medium text-gray-500">可见性</h4>
+              <p className="mt-1">{project.is_public ? '公开' : '私有'}</p>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Created</h4>
+              <h4 className="text-sm font-medium text-gray-500">创建时间</h4>
               <p className="mt-1">{formatDate(project.created_at)}</p>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Last Updated</h4>
+              <h4 className="text-sm font-medium text-gray-500">最后更新</h4>
               <p className="mt-1">{formatDate(project.updated_at)}</p>
             </div>
           </CardContent>
@@ -356,12 +356,12 @@ export default function ProjectDetailPage() {
         {/* Project Links & Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>Links & Configuration</CardTitle>
+            <CardTitle>链接与配置</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {project.repository_url && (
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Repository</h4>
+                <h4 className="text-sm font-medium text-gray-500">代码仓库</h4>
                 <a
                   href={project.repository_url}
                   target="_blank"
@@ -376,7 +376,7 @@ export default function ProjectDetailPage() {
 
             {project.documentation_url && (
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Documentation</h4>
+                <h4 className="text-sm font-medium text-gray-500">文档</h4>
                 <a
                   href={project.documentation_url}
                   target="_blank"
@@ -392,18 +392,30 @@ export default function ProjectDetailPage() {
             <Separator />
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">AI Output Language</h4>
+              <h4 className="text-sm font-medium text-gray-500">AI输出语言</h4>
               <p className="mt-1">{project.settings.ai_output_language}</p>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Task Template</h4>
-              <p className="mt-1">{project.settings.task_format_template}</p>
+              <h4 className="text-sm font-medium text-gray-500">任务模板</h4>
+              <p className="mt-1">
+                {project.settings.task_format_template === 'standard' ? '标准格式' :
+                 project.settings.task_format_template === 'detailed' ? '详细格式' :
+                 project.settings.task_format_template === 'simple' ? '简单格式' :
+                 project.settings.task_format_template === 'agile' ? '敏捷格式' :
+                 project.settings.task_format_template}
+              </p>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Default Priority</h4>
-              <p className="mt-1 capitalize">{project.settings.default_priority}</p>
+              <h4 className="text-sm font-medium text-gray-500">默认优先级</h4>
+              <p className="mt-1 capitalize">
+                {project.settings.default_priority === 'low' ? '低' :
+                 project.settings.default_priority === 'medium' ? '中' :
+                 project.settings.default_priority === 'high' ? '高' :
+                 project.settings.default_priority === 'urgent' ? '紧急' :
+                 project.settings.default_priority}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -412,31 +424,31 @@ export default function ProjectDetailPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>快捷操作</CardTitle>
           <CardDescription>
-            Common actions for this project
+            该项目的常用操作
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             <Button asChild>
               <Link href={`/projects/${project.id}/tasks`}>
-                View Tasks
+                查看任务
               </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href={`/projects/${project.id}/tasks/new`}>
-                Add Task
+                添加任务
               </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href={`/projects/${project.id}/reports`}>
-                View Reports
+                查看报告
               </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href={`/projects/${project.id}/settings`}>
-                Project Settings
+                项目设置
               </Link>
             </Button>
           </div>

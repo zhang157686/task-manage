@@ -45,8 +45,7 @@ import {
   TASK_PRIORITY_OPTIONS,
   getTaskStatusOption,
   getTaskPriorityOption,
-  formatTaskDuration,
-  calculateTaskProgress
+  formatTaskDuration
 } from '@/types/task';
 
 interface TaskCardsViewProps {
