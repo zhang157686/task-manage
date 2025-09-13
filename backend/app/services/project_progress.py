@@ -295,6 +295,7 @@ class ProjectProgressService:
             total_characters=content_stats['characters'],
             total_words=content_stats['words'],
             total_lines=content_stats['lines'],
+            first_created=progress.created_at,
             last_updated=progress.updated_at,
             is_published=progress.is_published
         )

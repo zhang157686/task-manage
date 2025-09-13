@@ -28,15 +28,14 @@ export interface ProjectProgressWithHistory extends ProjectProgress {
 
 export interface ProjectProgressStats {
   total_versions: number;
-  current_version: number;
   total_characters: number;
   total_words: number;
   total_lines: number;
-  word_count: number;
-  character_count: number;
-  first_created: string;
-  last_updated: string;
+  first_created?: string;
+  last_updated?: string;
   is_published: boolean;
+  // Optional fields for backward compatibility
+  current_version?: number;
 }
 
 export interface ProgressVersionCompare {
@@ -100,27 +99,31 @@ export const EXPORT_FORMAT_OPTIONS = [
 // Helper functions
 export const formatProgressStats = (stats: ProjectProgressStats) => {
   const now = new Date();
-  const lastUpdated = new Date(stats.last_updated);
-  const firstCreated = new Date(stats.first_created);
+  const lastUpdated = stats.last_updated ? new Date(stats.last_updated) : now;
+  const firstCreated = stats.first_created ? new Date(stats.first_created) : now;
   const daysSinceUpdate = Math.floor((now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24));
   const totalDays = Math.floor((lastUpdated.getTime() - firstCreated.getTime()) / (1000 * 60 * 60 * 24)) || 1;
   
+  // Use the correct field names from backend
+  const characterCount = stats.total_characters || 0;
+  const wordCount = stats.total_words || 0;
+  
   return {
-    versions: stats.total_versions,
-    characterCount: stats.character_count.toLocaleString(),
-    wordCount: stats.word_count.toLocaleString(),
-    paragraphCount: Math.floor(stats.character_count / 500), // Estimate
-    headingCount: Math.floor(stats.word_count / 100), // Estimate
-    codeBlockCount: Math.floor(stats.word_count / 200), // Estimate
-    linkCount: Math.floor(stats.word_count / 150), // Estimate
-    imageCount: Math.floor(stats.word_count / 300), // Estimate
-    readingTime: Math.ceil(stats.word_count / 200),
+    versions: stats.total_versions || 0,
+    characterCount: characterCount.toLocaleString(),
+    wordCount: wordCount.toLocaleString(),
+    paragraphCount: Math.floor(characterCount / 500), // Estimate
+    headingCount: Math.floor(wordCount / 100), // Estimate
+    codeBlockCount: Math.floor(wordCount / 200), // Estimate
+    linkCount: Math.floor(wordCount / 150), // Estimate
+    imageCount: Math.floor(wordCount / 300), // Estimate
+    readingTime: Math.ceil(wordCount / 200),
     firstCreated: firstCreated.toLocaleDateString('zh-CN'),
     lastUpdated: lastUpdated.toLocaleDateString('zh-CN'),
     daysSinceUpdate: daysSinceUpdate.toString(),
-    contentGrowth: ((stats.character_count / 1000) * 10).toFixed(1), // Estimate
+    contentGrowth: ((characterCount / 1000) * 10).toFixed(1), // Estimate
     updateFrequency: (stats.total_versions / Math.max(totalDays / 7, 1)).toFixed(1),
-    completeness: Math.min(100, (stats.word_count / 50)).toFixed(0), // Estimate based on 5000 words = 100%
+    completeness: Math.min(100, (wordCount / 50)).toFixed(0), // Estimate based on 5000 words = 100%
   };
 };
 

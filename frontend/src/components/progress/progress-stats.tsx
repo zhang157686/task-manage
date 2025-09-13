@@ -183,7 +183,7 @@ export function ProgressStats({ stats }: ProgressStatsProps) {
               
               <div className="flex justify-between text-sm">
                 <span>Current Version</span>
-                <Badge variant="outline">v{stats.current_version}</Badge>
+                <Badge variant="outline">v{stats.current_version || stats.total_versions}</Badge>
               </div>
             </div>
             
@@ -273,7 +273,7 @@ export function ProgressStats({ stats }: ProgressStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {stats.word_count > 1000 && (
+            {stats.total_words > 1000 && (
               <div className="flex items-center space-x-2">
                 <Badge variant="default" className="bg-green-100 text-green-800">
                   Good Length

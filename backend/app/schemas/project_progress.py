@@ -75,6 +75,7 @@ class ProjectProgressStats(BaseModel):
     total_characters: int = 0
     total_words: int = 0
     total_lines: int = 0
+    first_created: Optional[datetime] = None
     last_updated: Optional[datetime] = None
     is_published: bool = False
 
