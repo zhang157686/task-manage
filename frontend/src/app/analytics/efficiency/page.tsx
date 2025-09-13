@@ -173,24 +173,106 @@ export default function EfficiencyAnalyticsPage() {
         </Card>
       </div>
 
-      {/* Empty State */}
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Target className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">暂无效率数据</h3>
-          <p className="text-gray-500 mb-4 text-center">
-            完成一些任务后，这里将显示团队效率分析数据。
-          </p>
-          <div className="flex space-x-2">
-            <Button asChild>
-              <Link href="/tasks">查看任务</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/projects">管理项目</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Empty State - Only show when no data */}
+      {!loading && (!taskStats || taskStats.total_tasks === 0) && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Target className="h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">暂无效率数据</h3>
+            <p className="text-gray-500 mb-4 text-center">
+              完成一些任务后，这里将显示团队效率分析数据。
+            </p>
+            <div className="flex space-x-2">
+              <Button asChild>
+                <Link href="/tasks">查看任务</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/projects">管理项目</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Efficiency Details - Show when we have data */}
+      {!loading && taskStats && taskStats.total_tasks > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>效率分析详情</CardTitle>
+            <CardDescription>
+              基于当前任务数据的效率分析
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-medium">任务执行效率</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">总任务数</span>
+                    <span className="font-medium">{taskStats.total_tasks}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">已完成任务</span>
+                    <span className="font-medium text-green-600">{taskStats.done_tasks}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">进行中任务</span>
+                    <span className="font-medium text-blue-600">{taskStats.in_progress_tasks}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">阻塞任务</span>
+                    <span className="font-medium text-red-600">{taskStats.blocked_tasks}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="font-medium">效率指标</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">完成率</span>
+                    <span className="font-medium">
+                      {Math.round((taskStats.done_tasks / taskStats.total_tasks) * 100)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">生产力指数</span>
+                    <span className="font-medium">{getProductivityIndex()}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">阻塞率</span>
+                    <span className="font-medium">
+                      {Math.round((taskStats.blocked_tasks / taskStats.total_tasks) * 100)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">项目数量</span>
+                    <span className="font-medium">{projectCount}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {taskStats.average_completion_time && (
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">时间效率</h4>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">平均任务完成时间</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {Math.round(taskStats.average_completion_time)}天
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">
+                    基于已完成任务的平均用时计算
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
