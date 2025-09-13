@@ -62,7 +62,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
     resolver: zodResolver(modelFormSchema),
     defaultValues: {
       name: initialData?.name || '',
-      provider: (initialData?.provider as ModelProvider) || 'openai',
+      provider: (initialData?.provider as ModelProvider) || 'custom',
       model_id: initialData?.model_id || '',
       api_key: initialData?.api_key || '',
       api_base_url: initialData?.api_base_url || '',
@@ -74,23 +74,18 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
     },
   });
 
-  const watchedProvider = form.watch('provider');
-
   useEffect(() => {
-    setSelectedProvider(watchedProvider as ModelProvider);
-
-    // Update default base URL when provider changes
-    const providerInfo = MODEL_PROVIDERS.find(p => p.id === watchedProvider);
-    if (providerInfo?.defaultBaseUrl && !isEditing) {
-      form.setValue('api_base_url', providerInfo.defaultBaseUrl);
-    }
-  }, [watchedProvider, form, isEditing]);
+    // Always use custom provider
+    setSelectedProvider('custom');
+    form.setValue('provider', 'custom');
+  }, [form]);
 
   const handleSubmit = (data: ModelFormData) => {
     const { max_tokens, temperature, top_p, ...baseData } = data;
 
     const submitData: AIModelCreate = {
       ...baseData,
+      provider: 'custom', // Always use custom provider
       api_base_url: data.api_base_url || undefined,
       config: {
         max_tokens,
@@ -139,23 +134,16 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>提供商</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="选择提供商" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {MODEL_PROVIDERS.map((provider) => (
-                        <SelectItem key={provider.id} value={provider.id}>
-                          <div>
-                            <div className="font-medium">{provider.name}</div>
-                            <div className="text-sm text-gray-500">{provider.description}</div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input
+                      value="Custom Provider (OpenAI兼容)"
+                      disabled
+                      className="bg-gray-50"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    支持任何OpenAI兼容的API服务
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -168,26 +156,26 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
                 <FormItem>
                   <FormLabel>模型ID</FormLabel>
                   <FormControl>
-                    {providerInfo?.supportedModels.length ? (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="选择模型" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {providerInfo.supportedModels.map((model) => (
-                            <SelectItem key={model} value={model}>
-                              {model}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input placeholder="输入模型ID" {...field} />
-                    )}
+                    <Input placeholder="输入模型ID (例如: gpt-4, claude-3-sonnet)" {...field} />
                   </FormControl>
                   <FormDescription>
-                    具体的模型标识符 (例如: gpt-4, claude-3-sonnet)
+                    具体的模型标识符，支持任何OpenAI兼容的模型ID
                   </FormDescription>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-600 mb-2">常用模型参考：</p>
+                    <div className="flex flex-wrap gap-1">
+                      {['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'claude-3-opus', 'claude-3-sonnet', 'gemini-pro'].map((model) => (
+                        <button
+                          key={model}
+                          type="button"
+                          onClick={() => field.onChange(model)}
+                          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border text-gray-700 transition-colors"
+                        >
+                          {model}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

@@ -28,7 +28,7 @@ interface ModelTestDialogProps {
 }
 
 export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogProps) {
-  const [testMessage, setTestMessage] = useState('Hello, this is a test message. Please respond briefly.');
+  const [testMessage, setTestMessage] = useState('你好，这是一条测试消息，请简短回复。');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<AIModelTestResponse | null>(null);
 
@@ -44,19 +44,19 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
       setTestResult(result);
       
       if (result.success) {
-        toast.success('Model test completed successfully');
+        toast.success('模型测试完成');
       } else {
-        toast.error('Model test failed');
+        toast.error('模型测试失败');
       }
     } catch (error: any) {
       console.error('Test failed:', error);
       const errorResult: AIModelTestResponse = {
         success: false,
-        message: 'Test failed',
-        error: error.response?.data?.detail || error.message || 'Unknown error',
+        message: '测试失败',
+        error: error.response?.data?.detail || error.message || '未知错误',
       };
       setTestResult(errorResult);
-      toast.error('Failed to test model');
+      toast.error('模型测试失败');
     } finally {
       setTesting(false);
     }
@@ -73,10 +73,10 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <TestTube className="h-5 w-5" />
-            <span>Test Model Connection</span>
+            <span>测试模型连接</span>
           </DialogTitle>
           <DialogDescription>
-            Test the connection and response from "{model.name}"
+            测试与 "{model.name}" 的连接和响应
           </DialogDescription>
         </DialogHeader>
 
@@ -84,27 +84,27 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
           {/* Model Information */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Model Information</CardTitle>
+              <CardTitle className="text-sm">模型信息</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Name:</span>
+                <span className="text-sm text-gray-600">名称:</span>
                 <span className="font-medium">{model.name}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Provider:</span>
+                <span className="text-sm text-gray-600">提供商:</span>
                 <Badge variant="outline" className="capitalize">
                   {model.provider}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Model ID:</span>
+                <span className="text-sm text-gray-600">模型ID:</span>
                 <span className="font-mono text-sm">{model.model_id}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Base URL:</span>
+                <span className="text-sm text-gray-600">基础URL:</span>
                 <span className="font-mono text-sm text-gray-500">
-                  {model.api_base_url || 'Default'}
+                  {model.api_base_url || '默认'}
                 </span>
               </div>
             </CardContent>
@@ -113,16 +113,16 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
           {/* Test Configuration */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="test-message">Test Message</Label>
+              <Label htmlFor="test-message">测试消息</Label>
               <Input
                 id="test-message"
                 value={testMessage}
                 onChange={(e) => setTestMessage(e.target.value)}
-                placeholder="Enter a test message..."
+                placeholder="输入测试消息..."
                 className="mt-1"
               />
               <p className="text-sm text-gray-500 mt-1">
-                This message will be sent to the model to test the connection
+                此消息将发送给模型以测试连接
               </p>
             </div>
 
@@ -134,12 +134,12 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
               {testing ? (
                 <>
                   <Clock className="h-4 w-4 mr-2 animate-spin" />
-                  Testing Connection...
+                  测试连接中...
                 </>
               ) : (
                 <>
                   <TestTube className="h-4 w-4 mr-2" />
-                  Test Model
+                  测试模型
                 </>
               )}
             </Button>
@@ -157,35 +157,35 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
                     ) : (
                       <XCircle className="h-4 w-4 text-red-600" />
                     )}
-                    <span>Test Results</span>
+                    <span>测试结果</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className="text-sm text-gray-600">状态:</span>
                     <Badge 
                       variant={testResult.success ? 'default' : 'destructive'}
                       className={testResult.success ? 'bg-green-100 text-green-800' : ''}
                     >
-                      {testResult.success ? 'Success' : 'Failed'}
+                      {testResult.success ? '成功' : '失败'}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Message:</span>
+                    <span className="text-sm text-gray-600">消息:</span>
                     <span className="text-sm">{testResult.message}</span>
                   </div>
 
                   {testResult.response_time && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Response Time:</span>
-                      <span className="text-sm font-mono">{testResult.response_time}s</span>
+                      <span className="text-sm text-gray-600">响应时间:</span>
+                      <span className="text-sm font-mono">{testResult.response_time}秒</span>
                     </div>
                   )}
 
                   {testResult.error && (
                     <div className="space-y-2">
-                      <span className="text-sm text-gray-600">Error Details:</span>
+                      <span className="text-sm text-gray-600">错误详情:</span>
                       <div className="bg-red-50 border border-red-200 rounded-md p-3">
                         <p className="text-sm text-red-800 font-mono">
                           {testResult.error}
@@ -196,7 +196,7 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
 
                   {testResult.model_response && (
                     <div className="space-y-2">
-                      <span className="text-sm text-gray-600">Model Response:</span>
+                      <span className="text-sm text-gray-600">模型响应:</span>
                       <div className="bg-green-50 border border-green-200 rounded-md p-3">
                         <p className="text-sm text-green-800">
                           {testResult.model_response}
@@ -212,7 +212,7 @@ export function ModelTestDialog({ model, open, onOpenChange }: ModelTestDialogPr
 
         <div className="flex justify-end space-x-2 pt-4">
           <Button variant="outline" onClick={handleClose}>
-            Close
+            关闭
           </Button>
         </div>
       </DialogContent>

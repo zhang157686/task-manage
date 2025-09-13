@@ -4,12 +4,13 @@ AI Model service layer
 
 import time
 import logging
+import os
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from openai import OpenAI
+import openai
+from openai import OpenAI, DefaultHttpxClient
 from cryptography.fernet import Fernet
-import os
 
 from app.models.ai_model import AIModel
 from app.schemas.ai_model import AIModelCreate, AIModelUpdate, AIModelTestRequest
@@ -143,12 +144,27 @@ class AIModelService:
             # Decrypt API key
             api_key = self._decrypt_api_key(db_model.api_key)
             
-            # Create OpenAI client
-            client_kwargs = {"api_key": api_key}
+            # Create OpenAI client with explicit HTTP client to avoid proxy issues
+            # Based on official OpenAI SDK documentation
+            client_kwargs = {
+                "api_key": api_key,
+                "timeout": 60.0,  # Increase timeout to 60 seconds
+                "http_client": DefaultHttpxClient(),  # Use default HTTP client without proxy
+            }
             if db_model.api_base_url:
                 client_kwargs["base_url"] = db_model.api_base_url
             
-            client = OpenAI(**client_kwargs)
+            logger.info(f"Creating OpenAI client for model test with kwargs: {list(client_kwargs.keys())}")
+            
+            try:
+                client = OpenAI(**client_kwargs)
+            except Exception as e:
+                logger.error(f"Error creating OpenAI client: {str(e)}")
+                return {
+                    "success": False,
+                    "message": "Client initialization failed",
+                    "error": f"OpenAI client initialization error: {str(e)}"
+                }
             
             # Prepare model configuration
             config = db_model.config or {}
@@ -158,29 +174,63 @@ class AIModelService:
             # Test the connection
             start_time = time.time()
             
-            response = client.chat.completions.create(
-                model=db_model.model_id,
-                messages=[
-                    {"role": "user", "content": test_request.test_message}
-                ],
-                max_tokens=max_tokens,
-                temperature=temperature
-            )
+            logger.info(f"Testing model {db_model.model_id} with message: {test_request.test_message[:50]}...")
             
-            response_time = time.time() - start_time
-            
-            return {
-                "success": True,
-                "message": "Model connection successful",
-                "response_time": round(response_time, 3),
-                "model_response": response.choices[0].message.content
-            }
+            try:
+                response = client.chat.completions.create(
+                    model=db_model.model_id,
+                    messages=[
+                        {"role": "user", "content": test_request.test_message}
+                    ],
+                    max_tokens=max_tokens,
+                    temperature=temperature
+                )
+                
+                response_time = time.time() - start_time
+                
+                return {
+                    "success": True,
+                    "message": "模型连接成功",
+                    "response_time": round(response_time, 3),
+                    "model_response": response.choices[0].message.content
+                }
+                
+            except Exception as api_error:
+                response_time = time.time() - start_time
+                logger.error(f"API call failed after {response_time:.2f}s: {str(api_error)}")
+                
+                # Handle specific error types
+                error_message = str(api_error)
+                if "timeout" in error_message.lower():
+                    return {
+                        "success": False,
+                        "message": "连接超时",
+                        "error": f"请求超时 ({response_time:.1f}秒)，请检查网络连接和API配置"
+                    }
+                elif "unauthorized" in error_message.lower() or "401" in error_message:
+                    return {
+                        "success": False,
+                        "message": "认证失败",
+                        "error": "API密钥无效，请检查API密钥是否正确"
+                    }
+                elif "not found" in error_message.lower() or "404" in error_message:
+                    return {
+                        "success": False,
+                        "message": "模型未找到",
+                        "error": f"模型 '{db_model.model_id}' 不存在或不可用"
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "message": "模型连接失败",
+                        "error": error_message
+                    }
             
         except Exception as e:
             logger.error(f"Error testing model {model_id}: {str(e)}")
             return {
                 "success": False,
-                "message": "Model connection failed",
+                "message": "测试失败",
                 "error": str(e)
             }
     
@@ -190,7 +240,7 @@ class AIModelService:
             and_(AIModel.user_id == user_id, AIModel.is_default == True, AIModel.is_active == True)
         ).first()
     
-    def call_model(self, db: Session, user_id: int, messages: List[Dict[str, str]], model_id: Optional[int] = None) -> Dict[str, Any]:
+    def call_model(self, db: Session, user_id: int, messages: List[Dict[str, str]], model_id: Optional[int] = None, custom_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Call an AI model with messages"""
         # Get model (specific or default)
         if model_id:
@@ -208,17 +258,34 @@ class AIModelService:
             # Decrypt API key
             api_key = self._decrypt_api_key(db_model.api_key)
             
-            # Create OpenAI client
-            client_kwargs = {"api_key": api_key}
+            # Create OpenAI client with explicit HTTP client to avoid proxy issues
+            client_kwargs = {
+                "api_key": api_key,
+                "timeout": 60.0,  # Increase timeout to 60 seconds
+                "http_client": DefaultHttpxClient(),  # Use default HTTP client without proxy
+            }
             if db_model.api_base_url:
                 client_kwargs["base_url"] = db_model.api_base_url
             
-            client = OpenAI(**client_kwargs)
+            try:
+                client = OpenAI(**client_kwargs)
+            except Exception as e:
+                logger.error(f"Error creating OpenAI client in call_model: {str(e)}")
+                return {
+                    "success": False,
+                    "error": f"OpenAI client initialization error: {str(e)}"
+                }
             
             # Prepare model configuration
             config = db_model.config or {}
-            max_tokens = config.get("max_tokens", 1000)
-            temperature = config.get("temperature", 0.7)
+            
+            # Use custom config if provided, otherwise use model config
+            if custom_config:
+                max_tokens = custom_config.get("max_tokens", config.get("max_tokens", 2000))
+                temperature = custom_config.get("temperature", config.get("temperature", 0.7))
+            else:
+                max_tokens = config.get("max_tokens", 2000)  # Increase default max_tokens for longer responses
+                temperature = config.get("temperature", 0.7)
             
             # Call the model
             response = client.chat.completions.create(

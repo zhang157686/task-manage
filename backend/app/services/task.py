@@ -5,6 +5,7 @@ Task service layer
 import time
 import json
 import logging
+import re
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func, desc, asc, text
@@ -428,20 +429,24 @@ class TaskService:
             # Prepare AI prompt
             prompt = self._build_task_generation_prompt(project, generate_request)
             
-            # Call AI model
+            # Call AI model with higher max_tokens for task generation
             ai_response = ai_model_service.call_model(
                 db=db,
                 user_id=user_id,
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a project management assistant. Generate well-structured tasks in JSON format based on the project description."
+                        "content": "你是一个项目管理助手。根据项目描述生成结构化的任务。你必须严格返回有效的JSON数组格式，不要包含任何其他文本、解释或markdown格式。确保所有JSON字符串都正确闭合，没有语法错误。"
                     },
                     {
                         "role": "user",
                         "content": prompt
                     }
-                ]
+                ],
+                custom_config={
+                    "max_tokens": 4000,  # Use higher max_tokens for task generation
+                    "temperature": 0.3   # Lower temperature for more consistent JSON output
+                }
             )
             
             if not ai_response["success"]:
@@ -516,57 +521,80 @@ class TaskService:
     
     def _build_task_generation_prompt(self, project: Project, request: TaskGenerateRequest) -> str:
         """Build the AI prompt for task generation"""
+        task_count = request.task_count or "5-10"
+        
         prompt = f"""
-Generate {request.task_count} tasks for the following project:
+根据以下项目信息生成 {task_count} 个任务：
 
-Project Name: {project.name}
-Project Description: {project.description or "No description provided"}
-Project Details: {request.project_description}
+项目名称: {project.name}
+项目描述: {project.description or "无描述"}
+详细需求: {request.project_description}
 
-Requirements:
-- Generate tasks in JSON format as an array
-- Each task should have: title, description, details, test_strategy, priority, estimated_hours
-- Priority distribution: {request.priority_distribution}
-- Include subtasks: {request.include_subtasks}
-- Language: {project.settings.get('ai_output_language', '中文')}
+要求:
+- 必须返回有效的JSON数组格式
+- 每个任务包含: title, description, details, test_strategy, priority, estimated_hours
+- 优先级分布: {request.priority_distribution or "均匀分布"}
+- 包含子任务: {request.include_subtasks}
+- 输出语言: {project.settings.get('ai_output_language', '中文')}
 
-{f"Custom Requirements: {request.custom_requirements}" if request.custom_requirements else ""}
+{f"额外要求: {request.custom_requirements}" if request.custom_requirements else ""}
 
-Return only a valid JSON array of tasks. Each task object should follow this structure:
-{{
-    "title": "Task title",
-    "description": "Brief description",
-    "details": "Implementation details",
-    "test_strategy": "How to test this task",
+请严格按照以下JSON格式返回，不要包含任何其他文本或解释：
+
+[
+  {{
+    "title": "任务标题",
+    "description": "简要描述",
+    "details": "实现细节",
+    "test_strategy": "测试策略",
     "priority": "high|medium|low",
     "estimated_hours": 8
-}}
+  }}
+]
 
-Make sure the tasks are practical, actionable, and well-structured for software development.
+确保JSON格式完全有效，所有字符串都正确闭合，不要有语法错误。
 """
         return prompt
     
     def _parse_ai_task_response(self, response: str) -> List[Dict[str, Any]]:
         """Parse AI response and extract task data"""
         try:
+            # Log the raw response for debugging
+            logger.info(f"Raw AI response: {response[:200]}...")
+            
             # Try to find JSON in the response
             response = response.strip()
             
             # Remove markdown code blocks if present
             if response.startswith("```json"):
                 response = response[7:]
-            if response.startswith("```"):
+            elif response.startswith("```"):
                 response = response[3:]
             if response.endswith("```"):
                 response = response[:-3]
             
             response = response.strip()
             
+            # Try to extract JSON from the response if it contains other text
+            import re
+            json_match = re.search(r'\[.*\]', response, re.DOTALL)
+            if json_match:
+                response = json_match.group(0)
+            
+            # Try to fix common JSON issues
+            response = self._fix_json_response(response)
+            
+            logger.info(f"Cleaned response for JSON parsing: {response[:200]}...")
+            
             # Parse JSON
             tasks_data = json.loads(response)
             
             if not isinstance(tasks_data, list):
-                raise ValueError("Response is not a list")
+                # If it's a dict with a tasks key, extract the tasks
+                if isinstance(tasks_data, dict) and "tasks" in tasks_data:
+                    tasks_data = tasks_data["tasks"]
+                else:
+                    raise ValueError("Response is not a list or dict with tasks key")
             
             # Validate and clean task data
             cleaned_tasks = []
@@ -581,14 +609,58 @@ Make sure the tasks are practical, actionable, and well-structured for software 
                     
                     cleaned_tasks.append(task)
             
+            logger.info(f"Successfully parsed {len(cleaned_tasks)} tasks from AI response")
             return cleaned_tasks
             
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse AI response as JSON: {e}")
+            logger.error(f"Problematic response: {response}")
             raise ValueError("Invalid JSON response from AI")
         except Exception as e:
             logger.error(f"Error parsing AI response: {e}")
+            logger.error(f"Response content: {response}")
             raise ValueError(f"Failed to parse AI response: {str(e)}")
+    
+    def _fix_json_response(self, response: str) -> str:
+        """Try to fix common JSON formatting issues"""
+        try:
+            # Remove any trailing commas before closing brackets
+            response = re.sub(r',(\s*[}\]])', r'\1', response)
+            
+            # Fix unterminated strings by finding unmatched quotes
+            # This is a simple approach - count quotes and add missing ones
+            quote_count = response.count('"')
+            if quote_count % 2 != 0:
+                # Odd number of quotes, try to fix by adding a quote at the end
+                # Find the last incomplete string
+                last_quote_pos = response.rfind('"')
+                if last_quote_pos != -1:
+                    # Look for the next comma, bracket, or end of string
+                    next_delimiter = len(response)
+                    for delimiter in [',', '}', ']']:
+                        pos = response.find(delimiter, last_quote_pos)
+                        if pos != -1 and pos < next_delimiter:
+                            next_delimiter = pos
+                    
+                    # Insert closing quote before the delimiter
+                    if next_delimiter < len(response):
+                        response = response[:next_delimiter] + '"' + response[next_delimiter:]
+                    else:
+                        response += '"'
+            
+            # Ensure the response ends properly
+            response = response.strip()
+            if not response.endswith(']'):
+                # Try to find where the array should end
+                last_brace = response.rfind('}')
+                if last_brace != -1:
+                    response = response[:last_brace + 1] + ']'
+            
+            return response
+            
+        except Exception as e:
+            logger.warning(f"Failed to fix JSON response: {e}")
+            return response
 
 
 # Global service instance
