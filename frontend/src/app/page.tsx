@@ -3,12 +3,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Bot, FileText, Settings, Users, Plus, Zap, BarChart3, CheckCircle, XCircle, AlertCircle, RefreshCw } from "lucide-react";
+import { Bot, FileText, Settings, Users, Plus, BarChart3, CheckCircle, XCircle, AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { projectsService } from "@/services/projects";
-import { ProjectListItem } from "@/types/project";
 import { modelsService } from "@/services/models";
 
 interface DashboardStats {
@@ -302,7 +300,7 @@ export default function Home() {
               <div className="flex items-center space-x-2">
                 {getStatusIcon(apiStatus)}
                 <span className={`text-sm ${apiStatus === 'connected' ? 'text-green-600' :
-                    apiStatus === 'disconnected' ? 'text-red-600' : 'text-yellow-600'
+                  apiStatus === 'disconnected' ? 'text-red-600' : 'text-yellow-600'
                   }`}>
                   {getStatusText(apiStatus)}
                 </span>

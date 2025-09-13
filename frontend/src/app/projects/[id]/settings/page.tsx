@@ -40,32 +40,32 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-import { 
-  ProjectWithStats, 
-  PROJECT_STATUS_OPTIONS, 
-  TASK_FORMAT_TEMPLATES, 
-  PRIORITY_OPTIONS, 
-  LANGUAGE_OPTIONS 
+import {
+  ProjectWithStats,
+  PROJECT_STATUS_OPTIONS,
+  TASK_FORMAT_TEMPLATES,
+  PRIORITY_OPTIONS,
+  LANGUAGE_OPTIONS
 } from '@/types/project';
 import { projectsService } from '@/services/projects';
 
 // Form validation schema
 const settingsFormSchema = z.object({
   // Basic project info
-  name: z.string().min(1, 'Project name is required').max(200, 'Name too long'),
-  description: z.string().max(2000, 'Description too long').optional(),
+  name: z.string().min(1, '项目名称不能为空').max(200, '名称过长'),
+  description: z.string().max(2000, '描述过长').optional(),
   status: z.enum(['active', 'completed', 'paused', 'archived']),
   repository_url: z.string().url('无效的URL').optional().or(z.literal('')),
   documentation_url: z.string().url('无效的URL').optional().or(z.literal('')),
   is_public: z.boolean(),
-  
+
   // AI Settings
   ai_output_language: z.string(),
   task_format_template: z.string(),
   auto_generate_tasks: z.boolean(),
   default_priority: z.string(),
   enable_notifications: z.boolean(),
-  
+
   // Custom fields
   custom_team: z.string().optional(),
   custom_budget: z.number().optional(),
@@ -78,7 +78,7 @@ export default function ProjectSettingsPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = parseInt(params.id as string);
-  
+
   const [project, setProject] = useState<ProjectWithStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -98,7 +98,7 @@ export default function ProjectSettingsPage() {
       setLoading(true);
       const data = await projectsService.getProject(projectId);
       setProject(data);
-      
+
       // Set form values
       form.reset({
         name: data.name,
@@ -118,7 +118,7 @@ export default function ProjectSettingsPage() {
       });
     } catch (error) {
       console.error('Failed to load project:', error);
-      toast.error('Failed to load project');
+      toast.error('加载项目失败');
       router.push('/projects');
     } finally {
       setLoading(false);
@@ -128,7 +128,7 @@ export default function ProjectSettingsPage() {
   const handleSaveSettings = async (data: SettingsFormData) => {
     try {
       setSaving(true);
-      
+
       // Update basic project info
       await projectsService.updateProject(projectId, {
         name: data.name,
@@ -138,7 +138,7 @@ export default function ProjectSettingsPage() {
         documentation_url: data.documentation_url || undefined,
         is_public: data.is_public,
       });
-      
+
       // Update project settings
       await projectsService.updateProjectSettings(projectId, {
         ai_output_language: data.ai_output_language,
@@ -152,12 +152,12 @@ export default function ProjectSettingsPage() {
           deadline: data.custom_deadline || undefined,
         },
       });
-      
-      toast.success('Settings saved successfully');
+
+      toast.success('设置保存成功');
       loadProject(); // Reload to get updated data
     } catch (error: any) {
       console.error('Failed to save settings:', error);
-      toast.error(error.response?.data?.detail || 'Failed to save settings');
+      toast.error(error.response?.data?.detail || '保存设置失败');
     } finally {
       setSaving(false);
     }
@@ -169,7 +169,7 @@ export default function ProjectSettingsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Loading project settings...</p>
+            <p className="mt-2 text-sm text-gray-600">加载项目设置中...</p>
           </div>
         </div>
       </div>
@@ -180,12 +180,12 @@ export default function ProjectSettingsPage() {
     return (
       <div className="container mx-auto py-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Project not found</h2>
-          <p className="text-gray-600 mt-2">The project you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-gray-900">项目未找到</h2>
+          <p className="text-gray-600 mt-2">您要查找的项目不存在。</p>
           <Button asChild className="mt-4">
             <Link href="/projects">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Projects
+              返回项目列表
             </Link>
           </Button>
         </div>
@@ -199,7 +199,7 @@ export default function ProjectSettingsPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/projects">Projects</BreadcrumbLink>
+            <BreadcrumbLink href="/projects">项目</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -207,7 +207,7 @@ export default function ProjectSettingsPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Settings</BreadcrumbPage>
+            <BreadcrumbPage>设置</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -215,15 +215,15 @@ export default function ProjectSettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Project Settings</h1>
+          <h1 className="text-3xl font-bold">项目设置</h1>
           <p className="text-gray-600 mt-1">
-            Configure your project settings and preferences
+            配置您的项目设置和偏好
           </p>
         </div>
         <Button asChild variant="outline">
           <Link href={`/projects/${project.id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Project
+            返回项目
           </Link>
         </Button>
       </div>
@@ -233,9 +233,9 @@ export default function ProjectSettingsPage() {
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle>基本信息</CardTitle>
               <CardDescription>
-                Update your project's basic details and information
+                更新您项目的基本详情和信息
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -244,7 +244,7 @@ export default function ProjectSettingsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project Name</FormLabel>
+                    <FormLabel>项目名称</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -258,9 +258,9 @@ export default function ProjectSettingsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>项目描述</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <Textarea
                         className="min-h-[100px]"
                         {...field}
                       />
@@ -276,7 +276,7 @@ export default function ProjectSettingsPage() {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>状态</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -302,9 +302,9 @@ export default function ProjectSettingsPage() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel>Public Project</FormLabel>
+                        <FormLabel>公开项目</FormLabel>
                         <FormDescription>
-                          Make this project visible to others
+                          让其他人可以看到这个项目
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -324,7 +324,7 @@ export default function ProjectSettingsPage() {
                   name="repository_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Repository URL</FormLabel>
+                      <FormLabel>代码仓库URL</FormLabel>
                       <FormControl>
                         <Input placeholder="https://github.com/..." {...field} />
                       </FormControl>
@@ -338,7 +338,7 @@ export default function ProjectSettingsPage() {
                   name="documentation_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Documentation URL</FormLabel>
+                      <FormLabel>文档URL</FormLabel>
                       <FormControl>
                         <Input placeholder="https://docs.example.com" {...field} />
                       </FormControl>
@@ -353,9 +353,9 @@ export default function ProjectSettingsPage() {
           {/* AI & Task Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>AI & Task Settings</CardTitle>
+              <CardTitle>AI与任务设置</CardTitle>
               <CardDescription>
-                Configure how AI generates and manages tasks for this project
+                配置AI如何为此项目生成和管理任务
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -365,7 +365,7 @@ export default function ProjectSettingsPage() {
                   name="ai_output_language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>AI Output Language</FormLabel>
+                      <FormLabel>AI输出语言</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -390,7 +390,7 @@ export default function ProjectSettingsPage() {
                   name="task_format_template"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Task Format Template</FormLabel>
+                      <FormLabel>任务格式模板</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -415,7 +415,7 @@ export default function ProjectSettingsPage() {
                   name="default_priority"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Default Priority</FormLabel>
+                      <FormLabel>默认优先级</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -443,9 +443,9 @@ export default function ProjectSettingsPage() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel>Auto-Generate Tasks</FormLabel>
+                        <FormLabel>自动生成任务</FormLabel>
                         <FormDescription>
-                          Automatically generate tasks based on project requirements
+                          根据项目需求自动生成任务
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -464,9 +464,9 @@ export default function ProjectSettingsPage() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel>Enable Notifications</FormLabel>
+                        <FormLabel>启用通知</FormLabel>
                         <FormDescription>
-                          Receive notifications about project updates and task changes
+                          接收项目更新和任务变更的通知
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -485,9 +485,9 @@ export default function ProjectSettingsPage() {
           {/* Custom Fields */}
           <Card>
             <CardHeader>
-              <CardTitle>Custom Fields</CardTitle>
+              <CardTitle>自定义字段</CardTitle>
               <CardDescription>
-                Add custom information specific to your project
+                添加项目特定的自定义信息
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -497,12 +497,12 @@ export default function ProjectSettingsPage() {
                   name="custom_team"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Team</FormLabel>
+                      <FormLabel>团队</FormLabel>
                       <FormControl>
                         <Input placeholder="开发团队" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Team responsible for this project
+                        负责此项目的团队
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -514,17 +514,17 @@ export default function ProjectSettingsPage() {
                   name="custom_budget"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Budget</FormLabel>
+                      <FormLabel>预算</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="10000" 
+                        <Input
+                          type="number"
+                          placeholder="10000"
                           {...field}
                           onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                         />
                       </FormControl>
                       <FormDescription>
-                        Project budget (optional)
+                        项目预算 (可选)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -536,15 +536,15 @@ export default function ProjectSettingsPage() {
                   name="custom_deadline"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deadline</FormLabel>
+                      <FormLabel>截止日期</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="date" 
+                        <Input
+                          type="date"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Project deadline (optional)
+                        项目截止日期 (可选)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -562,12 +562,12 @@ export default function ProjectSettingsPage() {
               {saving ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
+                  保存中...
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Settings
+                  保存设置
                 </>
               )}
             </Button>

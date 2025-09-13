@@ -32,12 +32,12 @@ import { AIModel, AIModelCreate, MODEL_PROVIDERS, ModelProvider } from '@/types/
 
 // Form validation schema
 const modelFormSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  name: z.string().min(1, '模型名称不能为空').max(100, '名称过长'),
   provider: z.enum(['openai', 'anthropic', 'azure', 'custom']),
-  model_id: z.string().min(1, 'Model ID is required'),
-  api_key: z.string().min(1, 'API key is required'),
+  model_id: z.string().min(1, '模型ID不能为空'),
+  api_key: z.string().min(1, 'API密钥不能为空'),
   api_base_url: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, {
-    message: 'Invalid URL format',
+    message: '无效的URL格式',
   }),
   is_active: z.boolean(),
   is_default: z.boolean(),
@@ -110,9 +110,9 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
         {/* Basic Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
+            <CardTitle>基本信息</CardTitle>
             <CardDescription>
-              Configure the basic settings for your AI model
+              配置AI模型的基本设置
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -121,12 +121,12 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Model Name</FormLabel>
+                  <FormLabel>模型名称</FormLabel>
                   <FormControl>
-                    <Input placeholder="My GPT-4 Model" {...field} />
+                    <Input placeholder="我的 GPT-4 模型" {...field} />
                   </FormControl>
                   <FormDescription>
-                    A friendly name to identify this model configuration
+                    为此模型配置起一个便于识别的友好名称
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -138,11 +138,11 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               name="provider"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Provider</FormLabel>
+                  <FormLabel>提供商</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a provider" />
+                        <SelectValue placeholder="选择提供商" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -166,12 +166,12 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               name="model_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Model ID</FormLabel>
+                  <FormLabel>模型ID</FormLabel>
                   <FormControl>
                     {providerInfo?.supportedModels.length ? (
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a model" />
+                          <SelectValue placeholder="选择模型" />
                         </SelectTrigger>
                         <SelectContent>
                           {providerInfo.supportedModels.map((model) => (
@@ -182,11 +182,11 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input placeholder="Enter model ID" {...field} />
+                      <Input placeholder="输入模型ID" {...field} />
                     )}
                   </FormControl>
                   <FormDescription>
-                    The specific model identifier (e.g., gpt-4, claude-3-sonnet)
+                    具体的模型标识符 (例如: gpt-4, claude-3-sonnet)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -198,9 +198,9 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
         {/* API Configuration */}
         <Card>
           <CardHeader>
-            <CardTitle>API Configuration</CardTitle>
+            <CardTitle>API配置</CardTitle>
             <CardDescription>
-              Configure the API connection settings
+              配置API连接设置
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -209,7 +209,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               name="api_key"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>API Key</FormLabel>
+                  <FormLabel>API密钥</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -218,7 +218,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
                     />
                   </FormControl>
                   <FormDescription>
-                    Your API key for the selected provider
+                    所选提供商的API密钥
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -230,7 +230,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               name="api_base_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>API Base URL (Optional)</FormLabel>
+                  <FormLabel>API基础URL (可选)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="https://api.openai.com/v1"
@@ -238,7 +238,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
                     />
                   </FormControl>
                   <FormDescription>
-                    Custom API endpoint URL. Leave empty to use the default.
+                    自定义API端点URL。留空则使用默认值。
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -250,9 +250,9 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
         {/* Model Configuration */}
         <Card>
           <CardHeader>
-            <CardTitle>Model Parameters</CardTitle>
+            <CardTitle>模型参数</CardTitle>
             <CardDescription>
-              Fine-tune the model behavior and output settings
+              微调模型行为和输出设置
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -308,9 +308,9 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
         {/* Status Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>Status Settings</CardTitle>
+            <CardTitle>状态设置</CardTitle>
             <CardDescription>
-              Configure the model status and default settings
+              配置模型状态和默认设置
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -320,9 +320,9 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Active</FormLabel>
+                    <FormLabel className="text-base">启用</FormLabel>
                     <FormDescription>
-                      Enable this model for use in task generation
+                      启用此模型用于任务生成
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -341,9 +341,9 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Default Model</FormLabel>
+                    <FormLabel className="text-base">默认模型</FormLabel>
                     <FormDescription>
-                      Use this model as the default for new tasks
+                      将此模型设为新任务的默认模型
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -362,7 +362,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
 
         <div className="flex justify-end space-x-2">
           <Button type="submit">
-            {isEditing ? 'Update Model' : 'Create Model'}
+            {isEditing ? '更新模型' : '创建模型'}
           </Button>
         </div>
       </form>
