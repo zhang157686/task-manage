@@ -7,6 +7,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Eye } from 'lucide-react';
 import { extractTableOfContents } from '@/types/project-progress';
 
 interface MarkdownViewerProps {

@@ -194,7 +194,7 @@ class TaskSearchRequest(BaseModel):
     skip: int = Field(0, ge=0, description="跳过数量")
     limit: int = Field(50, ge=1, le=100, description="限制数量")
     sort_by: str = Field("created_at", description="排序字段")
-    sort_order: str = Field("desc", regex="^(asc|desc)$", description="排序方向")
+    sort_order: str = Field("desc", pattern="^(asc|desc)$", description="排序方向")
 
 
 class TaskLogResponse(BaseModel):

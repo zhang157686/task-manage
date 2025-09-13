@@ -93,7 +93,7 @@ class ProgressVersionCompare(BaseModel):
 
 class ProgressExportRequest(BaseModel):
     """Schema for progress export request"""
-    format: str = Field(..., regex="^(html|pdf|markdown)$", description="Export format")
+    format: str = Field(..., pattern="^(html|pdf|markdown)$", description="Export format")
     include_history: bool = Field(False, description="Include version history")
     include_metadata: bool = Field(True, description="Include metadata")
 

@@ -42,9 +42,9 @@ const modelFormSchema = z.object({
   is_active: z.boolean(),
   is_default: z.boolean(),
   // Config fields
-  max_tokens: z.coerce.number().min(1).max(8192).optional(),
-  temperature: z.coerce.number().min(0).max(2).optional(),
-  top_p: z.coerce.number().min(0).max(1).optional(),
+  max_tokens: z.number().min(1).max(8192).optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  top_p: z.number().min(0).max(1).optional(),
 });
 
 type ModelFormData = z.infer<typeof modelFormSchema>;
@@ -271,7 +271,7 @@ export function ModelForm({ initialData, onSubmit, isEditing = false }: ModelFor
                           min={configField.min}
                           max={configField.max}
                           step={configField.step || 1}
-                          value={field.value || ''}
+                          value={typeof field.value === 'number' ? field.value : ''}
                           onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                         />
                       ) : configField.type === 'select' ? (

@@ -68,7 +68,7 @@ const settingsFormSchema = z.object({
   
   // Custom fields
   custom_team: z.string().optional(),
-  custom_budget: z.coerce.number().optional(),
+  custom_budget: z.number().optional(),
   custom_deadline: z.string().optional(),
 });
 
