@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 # Create FastMCP server instance
-mcp = FastMCP(config.server_name)
+mcp = FastMCP()
 
 
 @mcp.tool()

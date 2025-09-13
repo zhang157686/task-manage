@@ -3,7 +3,7 @@ MCP Server Configuration
 """
 import os
 from typing import Optional
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class MCPServerConfig(BaseSettings):
@@ -30,9 +30,11 @@ class MCPServerConfig(BaseSettings):
     http_port: int = 8001
     http_host: str = "localhost"
     
-    class Config:
-        env_prefix = "MCP_"
-        env_file = ".env"
+    model_config = {
+        "env_prefix": "MCP_",
+        "env_file": ".env",
+        "extra": "ignore"  # Ignore extra fields from main .env
+    }
 
 
 # Global config instance
