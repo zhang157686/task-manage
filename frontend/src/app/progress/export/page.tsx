@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,7 +12,8 @@ import {
     FileText,
     Calendar,
     Settings,
-    CheckCircle
+    CheckCircle,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -21,27 +23,253 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { projectsService } from '@/services/projects';
+import { projectProgressService } from '@/services/project-progress';
+import { ProjectListItem } from '@/types/project';
 
 export default function ProgressExportPage() {
+    const [projects, setProjects] = useState<ProjectListItem[]>([]);
+    const [projectsWithProgress, setProjectsWithProgress] = useState<number[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
-    const [exportFormat, setExportFormat] = useState('pdf');
+    const [exportFormat, setExportFormat] = useState<'html' | 'pdf' | 'markdown' | 'docx'>('pdf');
     const [includeCharts, setIncludeCharts] = useState(true);
     const [includeTaskDetails, setIncludeTaskDetails] = useState(true);
     const [includeTimeline, setIncludeTimeline] = useState(true);
     const [dateRange, setDateRange] = useState('all');
     const [isExporting, setIsExporting] = useState(false);
 
+    useEffect(() => {
+        loadProjects();
+    }, []);
+
+    const loadProjects = async () => {
+        try {
+            setLoading(true);
+
+            // Get all projects
+            const allProjects = await projectsService.getProjects({});
+            setProjects(allProjects);
+
+            // Check which projects have progress documents
+            const progressChecks = await Promise.all(
+                allProjects.map(async (project) => {
+                    try {
+                        await projectProgressService.getProgress(project.id);
+                        return project.id;
+                    } catch (error: any) {
+                        if (error.response?.status === 404) {
+                            return null;
+                        }
+                        throw error;
+                    }
+                })
+            );
+
+            const validProjectIds = progressChecks.filter(id => id !== null) as number[];
+            setProjectsWithProgress(validProjectIds);
+
+        } catch (error) {
+            console.error('Failed to load projects:', error);
+            toast.error('加载项目失败');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleExport = async () => {
+        if (selectedProjects.length === 0) {
+            toast.error('请选择要导出的项目');
+            return;
+        }
+
         setIsExporting(true);
         try {
-            // TODO: Implement export functionality
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Mock delay
-            // Download would happen here
-        } catch (error) {
+            const projectIds = selectedProjects.includes('all')
+                ? projectsWithProgress
+                : selectedProjects.map(id => parseInt(id));
+
+            // Export each project's progress document
+            for (const projectId of projectIds) {
+                const project = projects.find(p => p.id === projectId);
+                if (!project) continue;
+
+                try {
+                    // Get progress document
+                    const progress = await projectProgressService.getProgress(projectId);
+
+                    // Generate export content based on format
+                    let content = '';
+                    let filename = '';
+                    let mimeType = '';
+
+                    if (exportFormat === 'markdown') {
+                        content = generateMarkdownExport(project, progress, {
+                            includeCharts,
+                            includeTaskDetails,
+                            includeTimeline
+                        });
+                        filename = `${project.name}-进展报告.md`;
+                        mimeType = 'text/markdown';
+                    } else if (exportFormat === 'html') {
+                        content = generateHtmlExport(project, progress, {
+                            includeCharts,
+                            includeTaskDetails,
+                            includeTimeline
+                        });
+                        filename = `${project.name}-进展报告.html`;
+                        mimeType = 'text/html';
+                    } else {
+                        // For PDF and DOCX, we'll generate HTML and let the user save/print
+                        content = generateHtmlExport(project, progress, {
+                            includeCharts,
+                            includeTaskDetails,
+                            includeTimeline
+                        });
+                        filename = `${project.name}-进展报告.html`;
+                        mimeType = 'text/html';
+                    }
+
+                    // Create and download file
+                    const blob = new Blob([content], { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    toast.success(`${project.name} 导出成功`);
+                } catch (error: any) {
+                    console.error(`Failed to export project ${project.name}:`, error);
+                    toast.error(`${project.name} 导出失败: ${error.response?.data?.detail || error.message}`);
+                }
+            }
+
+        } catch (error: any) {
             console.error('Export failed:', error);
+            toast.error('导出失败');
         } finally {
             setIsExporting(false);
         }
+    };
+
+    const generateMarkdownExport = (project: ProjectListItem, progress: any, options: any) => {
+        const now = new Date().toLocaleString('zh-CN');
+
+        let content = `# ${project.name} - 项目进展报告
+
+**生成时间**: ${now}
+**项目描述**: ${project.description || '无'}
+**项目状态**: ${getProjectStatusLabel(project.status)}
+**文档版本**: ${progress.version}
+**最后更新**: ${new Date(progress.updated_at).toLocaleString('zh-CN')}
+
+---
+
+## 项目概览
+
+${progress.content}
+
+---
+
+## 文档信息
+
+- **创建时间**: ${new Date(progress.created_at).toLocaleString('zh-CN')}
+- **更新时间**: ${new Date(progress.updated_at).toLocaleString('zh-CN')}
+- **版本号**: ${progress.version}
+- **发布状态**: ${progress.is_published ? '已发布' : '草稿'}
+- **内容长度**: ${progress.content.length.toLocaleString()} 字符
+
+---
+
+*此报告由任务管理系统自动生成*
+`;
+
+        return content;
+    };
+
+    const generateHtmlExport = (project: ProjectListItem, progress: any, options: any) => {
+        const now = new Date().toLocaleString('zh-CN');
+
+        return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${project.name} - 项目进展报告</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        .header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        .meta { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta-item { margin: 5px 0; }
+        .content { margin: 30px 0; }
+        .footer { border-top: 1px solid #eee; padding-top: 20px; margin-top: 40px; text-align: center; color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${project.name} - 项目进展报告</h1>
+        <p><strong>生成时间</strong>: ${now}</p>
+    </div>
+    
+    <div class="meta">
+        <div class="meta-item"><strong>项目描述</strong>: ${project.description || '无'}</div>
+        <div class="meta-item"><strong>项目状态</strong>: ${getProjectStatusLabel(project.status)}</div>
+        <div class="meta-item"><strong>文档版本</strong>: ${progress.version}</div>
+        <div class="meta-item"><strong>最后更新</strong>: ${new Date(progress.updated_at).toLocaleString('zh-CN')}</div>
+        <div class="meta-item"><strong>发布状态</strong>: ${progress.is_published ? '已发布' : '草稿'}</div>
+    </div>
+    
+    <div class="content">
+        <h2>项目概览</h2>
+        <div>${progress.content.replace(/\n/g, '<br>')}</div>
+    </div>
+    
+    <div class="footer">
+        <p>此报告由任务管理系统自动生成</p>
+    </div>
+</body>
+</html>`;
+    };
+
+    const getProjectStatusLabel = (status: string) => {
+        switch (status) {
+            case 'active': return '进行中';
+            case 'completed': return '已完成';
+            case 'on_hold': return '暂停';
+            case 'cancelled': return '已取消';
+            default: return '未知';
+        }
+    };
+
+    const handleProjectSelection = (projectId: string, checked: boolean) => {
+        if (projectId === 'all') {
+            if (checked) {
+                setSelectedProjects(['all']);
+            } else {
+                setSelectedProjects([]);
+            }
+        } else {
+            setSelectedProjects(prev => {
+                const newSelection = prev.filter(id => id !== 'all');
+                if (checked) {
+                    return [...newSelection, projectId];
+                } else {
+                    return newSelection.filter(id => id !== projectId);
+                }
+            });
+        }
+    };
+
+    const getSelectedProjectCount = () => {
+        if (selectedProjects.includes('all')) {
+            return projectsWithProgress.length;
+        }
+        return selectedProjects.length;
     };
 
     return (
@@ -77,28 +305,63 @@ export default function ProgressExportPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-3">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="all-projects"
-                                        checked={selectedProjects.includes('all')}
-                                        onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setSelectedProjects(['all']);
-                                            } else {
-                                                setSelectedProjects([]);
-                                            }
-                                        }}
-                                    />
-                                    <Label htmlFor="all-projects" className="font-medium">
-                                        所有项目
-                                    </Label>
+                            {loading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                                    <span>加载项目中...</span>
                                 </div>
-                                <div className="ml-6 space-y-2 text-sm text-gray-600">
-                                    <p>暂无项目可选择</p>
-                                    <p>创建项目后将在此处显示</p>
+                            ) : projectsWithProgress.length === 0 ? (
+                                <div className="space-y-3">
+                                    <div className="text-center py-8">
+                                        <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">暂无可导出的项目</h3>
+                                        <p className="text-gray-500 mb-4">
+                                            没有找到包含进展文档的项目
+                                        </p>
+                                        <Button asChild variant="outline">
+                                            <Link href="/progress">
+                                                <FileText className="h-4 w-4 mr-2" />
+                                                创建进展文档
+                                            </Link>
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="all-projects"
+                                            checked={selectedProjects.includes('all')}
+                                            onCheckedChange={(checked) => handleProjectSelection('all', !!checked)}
+                                        />
+                                        <Label htmlFor="all-projects" className="font-medium">
+                                            所有项目 ({projectsWithProgress.length} 个)
+                                        </Label>
+                                    </div>
+                                    <div className="ml-6 space-y-2">
+                                        {projects
+                                            .filter(project => projectsWithProgress.includes(project.id))
+                                            .map((project) => (
+                                                <div key={project.id} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`project-${project.id}`}
+                                                        checked={selectedProjects.includes('all') || selectedProjects.includes(project.id.toString())}
+                                                        onCheckedChange={(checked) => handleProjectSelection(project.id.toString(), !!checked)}
+                                                        disabled={selectedProjects.includes('all')}
+                                                    />
+                                                    <Label htmlFor={`project-${project.id}`} className="text-sm">
+                                                        {project.name}
+                                                    </Label>
+                                                    {project.description && (
+                                                        <span className="text-xs text-gray-500 truncate max-w-xs">
+                                                            - {project.description}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -125,7 +388,7 @@ export default function ProgressExportPage() {
                                             <SelectItem value="pdf">PDF 文档</SelectItem>
                                             <SelectItem value="docx">Word 文档</SelectItem>
                                             <SelectItem value="html">HTML 网页</SelectItem>
-                                            <SelectItem value="xlsx">Excel 表格</SelectItem>
+                                            <SelectItem value="markdown">Markdown 文档</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -190,7 +453,7 @@ export default function ProgressExportPage() {
                         <CardContent className="pt-6">
                             <Button
                                 onClick={handleExport}
-                                disabled={isExporting || selectedProjects.length === 0}
+                                disabled={isExporting || selectedProjects.length === 0 || projectsWithProgress.length === 0}
                                 className="w-full"
                                 size="lg"
                             >
@@ -224,7 +487,9 @@ export default function ProgressExportPage() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">项目数:</span>
-                                    <span className="font-medium">0</span>
+                                    <span className="font-medium">
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : getSelectedProjectCount()}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">时间范围:</span>

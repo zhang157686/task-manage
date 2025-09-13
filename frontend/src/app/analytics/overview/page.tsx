@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,11 +18,53 @@ import {
   Target,
   Activity,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import { projectsService } from '@/services/projects';
+import { tasksService } from '@/services/tasks';
+import { TaskStats } from '@/types/task';
 
 export default function AnalyticsOverviewPage() {
+  const [loading, setLoading] = useState(true);
+  const [projectCount, setProjectCount] = useState(0);
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
+
+  useEffect(() => {
+    loadAnalyticsData();
+  }, []);
+
+  const loadAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load projects count
+      const projects = await projectsService.getProjects({});
+      setProjectCount(projects.length);
+      
+      // Load task statistics
+      const stats = await tasksService.getTaskStats();
+      setTaskStats(stats);
+      
+    } catch (error) {
+      console.error('Failed to load analytics data:', error);
+      toast.error('加载分析数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCompletionRate = () => {
+    if (!taskStats || taskStats.total_tasks === 0) return 0;
+    return Math.round((taskStats.done_tasks / taskStats.total_tasks) * 100);
+  };
+
+  const getActiveTasksCount = () => {
+    if (!taskStats) return 0;
+    return taskStats.in_progress_tasks + taskStats.review_tasks;
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
@@ -49,10 +93,11 @@ export default function AnalyticsOverviewPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : projectCount}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span>+0% 较上月</span>
+              <span>所有项目</span>
             </div>
           </CardContent>
         </Card>
@@ -63,10 +108,11 @@ export default function AnalyticsOverviewPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : getActiveTasksCount()}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span>+0% 较上周</span>
+              <span>进行中 + 审核中</span>
             </div>
           </CardContent>
         </Card>
@@ -77,23 +123,31 @@ export default function AnalyticsOverviewPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${getCompletionRate()}%`}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
-              <span>-0% 较上月</span>
+              <span>
+                {taskStats ? `${taskStats.done_tasks}/${taskStats.total_tasks} 已完成` : '暂无数据'}
+              </span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">团队效率</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">平均完成时间</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 
+                taskStats?.average_completion_time ? 
+                  `${Math.round(taskStats.average_completion_time)}天` : '--'
+              }
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <span>暂无数据</span>
+              <span>每个任务</span>
             </div>
           </CardContent>
         </Card>
@@ -174,30 +228,47 @@ export default function AnalyticsOverviewPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm">按时完成率</span>
+                <span className="text-sm">任务完成率</span>
               </div>
-              <span className="font-medium">--</span>
+              <span className="font-medium">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                  taskStats ? `${getCompletionRate()}%` : '--'
+                }
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Clock className="h-4 w-4 text-blue-500" />
                 <span className="text-sm">平均完成时间</span>
               </div>
-              <span className="font-medium">--</span>
+              <span className="font-medium">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                  taskStats?.average_completion_time ? 
+                    `${Math.round(taskStats.average_completion_time)}天` : '--'
+                }
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm">逾期任务率</span>
+                <span className="text-sm">待处理任务</span>
               </div>
-              <span className="font-medium">--</span>
+              <span className="font-medium">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                  taskStats ? taskStats.pending_tasks : '--'
+                }
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4 text-purple-500" />
-                <span className="text-sm">生产力趋势</span>
+                <span className="text-sm">阻塞任务</span>
               </div>
-              <span className="font-medium">--</span>
+              <span className="font-medium">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                  taskStats ? taskStats.blocked_tasks : '--'
+                }
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -235,24 +306,26 @@ export default function AnalyticsOverviewPage() {
         </CardContent>
       </Card>
 
-      {/* Empty State Message */}
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <BarChart3 className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">开始收集数据</h3>
-          <p className="text-gray-500 mb-4 text-center max-w-md">
-            创建项目和任务后，这里将显示详细的分析数据和图表，帮助您更好地了解团队的工作效率。
-          </p>
-          <div className="flex space-x-2">
-            <Button asChild>
-              <Link href="/projects/new">创建项目</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/tasks/generate">生成任务</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Empty State Message - Only show when no data */}
+      {!loading && projectCount === 0 && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <BarChart3 className="h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">开始收集数据</h3>
+            <p className="text-gray-500 mb-4 text-center max-w-md">
+              创建项目和任务后，这里将显示详细的分析数据和图表，帮助您更好地了解团队的工作效率。
+            </p>
+            <div className="flex space-x-2">
+              <Button asChild>
+                <Link href="/projects">创建项目</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/tasks/generate">生成任务</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

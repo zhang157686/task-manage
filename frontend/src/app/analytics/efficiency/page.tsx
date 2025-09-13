@@ -1,11 +1,64 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, Clock, Target, Users } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Clock, Target, Users, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { tasksService } from '@/services/tasks';
+import { projectsService } from '@/services/projects';
+import { TaskStats } from '@/types/task';
 
 export default function EfficiencyAnalyticsPage() {
+  const [loading, setLoading] = useState(true);
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
+  const [projectCount, setProjectCount] = useState(0);
+
+  useEffect(() => {
+    loadEfficiencyData();
+  }, []);
+
+  const loadEfficiencyData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load task statistics
+      const stats = await tasksService.getTaskStats();
+      setTaskStats(stats);
+      
+      // Load project count
+      const projects = await projectsService.getProjects({});
+      setProjectCount(projects.length);
+      
+    } catch (error) {
+      console.error('Failed to load efficiency data:', error);
+      toast.error('加载效率数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getProductivityIndex = () => {
+    if (!taskStats || taskStats.total_tasks === 0) return 0;
+    // Simple productivity calculation: (completed + in_progress) / total * 100
+    const activeWork = taskStats.done_tasks + taskStats.in_progress_tasks;
+    return Math.round((activeWork / taskStats.total_tasks) * 100);
+  };
+
+  const getOnTimeCompletionRate = () => {
+    if (!taskStats || taskStats.total_tasks === 0) return 0;
+    // Assuming tasks completed without being blocked are "on time"
+    const onTimeCompleted = taskStats.done_tasks;
+    return Math.round((onTimeCompleted / taskStats.total_tasks) * 100);
+  };
+
+  const getTeamLoad = () => {
+    if (!taskStats || projectCount === 0) return 0;
+    // Simple calculation: total tasks per project
+    return Math.round(taskStats.total_tasks / projectCount);
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
@@ -33,8 +86,12 @@ export default function EfficiencyAnalyticsPage() {
             <CardTitle className="text-sm font-medium">生产力指数</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">暂无数据</p>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${getProductivityIndex()}%`}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {taskStats ? '活跃任务占比' : '暂无数据'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -42,8 +99,13 @@ export default function EfficiencyAnalyticsPage() {
             <CardTitle className="text-sm font-medium">平均完成时间</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">天/任务</p>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 
+                taskStats?.average_completion_time ? 
+                  `${Math.round(taskStats.average_completion_time)}天` : '--'
+              }
+            </div>
+            <p className="text-xs text-muted-foreground">每个任务</p>
           </CardContent>
         </Card>
         <Card>
@@ -51,17 +113,25 @@ export default function EfficiencyAnalyticsPage() {
             <CardTitle className="text-sm font-medium">按时完成率</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">准时交付</p>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${getOnTimeCompletionRate()}%`}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {taskStats ? '准时交付' : '暂无数据'}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">团队负载</CardTitle>
+            <CardTitle className="text-sm font-medium">项目负载</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">任务/人</p>
+            <div className="text-2xl font-bold">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : getTeamLoad()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {taskStats && projectCount > 0 ? '任务/项目' : '暂无数据'}
+            </p>
           </CardContent>
         </Card>
       </div>
