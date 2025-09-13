@@ -25,7 +25,7 @@ class AccessKeyService:
         """Generate a unique API key"""
         # Generate random string (32 characters)
         random_part = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
-        return f"task_管理系统_{random_part}"
+        return random_part
     
     @staticmethod
     def create_access_key(db: Session, user: User, key_create: AccessKeyCreate) -> AccessKey:
