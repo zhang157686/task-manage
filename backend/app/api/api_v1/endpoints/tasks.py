@@ -12,7 +12,7 @@ from app.models.user import User
 from app.schemas.task import (
     TaskCreate, TaskUpdate, TaskResponse, TaskListItem, TaskStatusUpdate,
     TaskBatchUpdate, TaskBatchStatusUpdate, TaskGenerateRequest, TaskGenerateResponse,
-    TaskSearchRequest, TaskStats, TaskStatus
+    TaskSearchRequest, TaskStats, TaskStatus, TaskLogResponse, TaskWithLogs
 )
 from app.services.task import task_service
 
@@ -324,5 +324,56 @@ async def remove_dependency(
             raise HTTPException(status_code=404, detail="Dependency not found")
         
         return {"message": "Dependency removed successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{task_id}/logs", response_model=List[TaskLogResponse])
+async def get_task_logs(
+    task_id: int,
+    skip: int = Query(0, ge=0, description="跳过数量"),
+    limit: int = Query(50, ge=1, le=100, description="限制数量"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get task change logs"""
+    try:
+        logs = task_service.get_task_logs(
+            db=db,
+            task_id=task_id,
+            user_id=current_user.id,
+            skip=skip,
+            limit=limit
+        )
+        return [TaskLogResponse.from_orm(log) for log in logs]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{task_id}/with-logs", response_model=TaskWithLogs)
+async def get_task_with_logs(
+    task_id: int,
+    logs_limit: int = Query(20, ge=1, le=100, description="日志数量限制"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get task with its change logs"""
+    task = task_service.get_task(db=db, task_id=task_id, user_id=current_user.id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    try:
+        logs = task_service.get_task_logs(
+            db=db,
+            task_id=task_id,
+            user_id=current_user.id,
+            skip=0,
+            limit=logs_limit
+        )
+        
+        task_dict = TaskResponse.from_orm(task).dict()
+        task_dict["logs"] = [TaskLogResponse.from_orm(log) for log in logs]
+        
+        return TaskWithLogs(**task_dict)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

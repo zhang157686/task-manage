@@ -17,6 +17,7 @@ from app.schemas.task import (
     TaskSearchRequest, TaskStats, TaskBatchUpdate, TaskBatchStatusUpdate
 )
 from app.services.ai_model import ai_model_service
+from app.services.task_log import task_log_service
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +110,9 @@ class TaskService:
         db.commit()
         db.refresh(db_task)
         
+        # Log task creation
+        task_log_service.log_task_creation(db, db_task, user_id)
+        
         logger.info(f"Created task {db_task.id} for user {user_id}")
         return db_task
     
@@ -118,8 +122,13 @@ class TaskService:
         if not db_task:
             return None
         
-        # Update fields
+        # Store old values for logging
+        old_values = {}
         update_data = task_data.dict(exclude_unset=True)
+        
+        for field in update_data.keys():
+            if hasattr(db_task, field):
+                old_values[field] = getattr(db_task, field)
         
         # Handle status change
         if "status" in update_data and update_data["status"] == TaskStatus.DONE:
@@ -128,11 +137,22 @@ class TaskService:
             # If changing from DONE to something else, clear completed_at
             update_data["completed_at"] = None
         
+        # Handle assignment change logging
+        if "assignee_id" in update_data:
+            old_assignee_id = db_task.assignee_id
+            new_assignee_id = update_data["assignee_id"]
+            if old_assignee_id != new_assignee_id:
+                task_log_service.log_assignment_change(db, db_task, user_id, old_assignee_id, new_assignee_id)
+        
+        # Update fields
         for field, value in update_data.items():
             setattr(db_task, field, value)
         
         db.commit()
         db.refresh(db_task)
+        
+        # Log the updates
+        task_log_service.log_task_update(db, db_task, user_id, old_values, update_data)
         
         logger.info(f"Updated task {task_id} for user {user_id}")
         return db_task
@@ -147,6 +167,9 @@ class TaskService:
         db.query(TaskDependency).filter(
             or_(TaskDependency.task_id == task_id, TaskDependency.depends_on_id == task_id)
         ).delete()
+        
+        # Log task deletion before deleting
+        task_log_service.log_task_deletion(db, db_task, user_id)
         
         # Delete the task (subtasks will be deleted by cascade)
         db.delete(db_task)
@@ -172,6 +195,10 @@ class TaskService:
         
         db.commit()
         db.refresh(db_task)
+        
+        # Log status change
+        if old_status != status:
+            task_log_service.log_status_change(db, db_task, user_id, old_status.value, status.value)
         
         logger.info(f"Updated task {task_id} status to {status.value} for user {user_id}")
         return db_task
@@ -226,6 +253,9 @@ class TaskService:
         db.add(dependency)
         db.commit()
         
+        # Log dependency addition
+        task_log_service.log_dependency_change(db, task_id, user_id, "dependency_added", depends_on_id)
+        
         logger.info(f"Added dependency: task {task_id} depends on task {depends_on_id}")
         return True
     
@@ -244,6 +274,8 @@ class TaskService:
         db.commit()
         
         if deleted:
+            # Log dependency removal
+            task_log_service.log_dependency_change(db, task_id, user_id, "dependency_removed", depends_on_id)
             logger.info(f"Removed dependency: task {task_id} no longer depends on task {depends_on_id}")
         
         return deleted > 0
@@ -477,6 +509,10 @@ class TaskService:
             return False
         
         return has_path(depends_on_id, task_id)
+    
+    def get_task_logs(self, db: Session, task_id: int, user_id: int, skip: int = 0, limit: int = 100):
+        """Get task change logs"""
+        return task_log_service.get_task_logs(db, task_id, user_id, skip, limit)
     
     def _build_task_generation_prompt(self, project: Project, request: TaskGenerateRequest) -> str:
         """Build the AI prompt for task generation"""

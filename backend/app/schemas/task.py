@@ -197,5 +197,27 @@ class TaskSearchRequest(BaseModel):
     sort_order: str = Field("desc", regex="^(asc|desc)$", description="排序方向")
 
 
+class TaskLogResponse(BaseModel):
+    """Schema for task log response"""
+    id: int
+    task_id: int
+    user_id: int
+    action: str
+    field_name: Optional[str]
+    old_value: Optional[str]
+    new_value: Optional[str]
+    description: Optional[str]
+    extra_data: Optional[Dict[str, Any]]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TaskWithLogs(TaskResponse):
+    """Schema for task with change logs"""
+    logs: List[TaskLogResponse] = Field(default_factory=list)
+
+
 # Update forward references
 TaskResponse.model_rebuild()
