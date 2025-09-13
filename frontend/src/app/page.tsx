@@ -4,13 +4,77 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bot, FileText, Settings, Users, Plus, Zap, BarChart3, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Bot, FileText, Settings, Users, Plus, Zap, BarChart3, CheckCircle, XCircle, AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
+import { projectsService } from "@/services/projects";
+import { ProjectListItem } from "@/types/project";
+import { modelsService } from "@/services/models";
+
+interface DashboardStats {
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  totalModels: number;
+  activeModels: number;
+}
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProjects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    totalTasks: 0,
+    completedTasks: 0,
+    inProgressTasks: 0,
+    totalModels: 0,
+    activeModels: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const loadDashboardStats = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const [projects, models] = await Promise.all([
+        projectsService.getProjects().catch((error) => {
+          console.error('Failed to load projects:', error);
+          return []; // 如果项目服务失败，返回空数组
+        }),
+        modelsService.getModels().catch((error) => {
+          console.error('Failed to load models:', error);
+          return []; // 如果模型服务失败，返回空数组
+        })
+      ]);
+
+      const dashboardStats: DashboardStats = {
+        totalProjects: projects.length,
+        activeProjects: projects.filter(p => p.status === 'active').length,
+        completedProjects: projects.filter(p => p.status === 'completed').length,
+        totalTasks: projects.reduce((sum, p) => sum + p.stats.total_tasks, 0),
+        completedTasks: projects.reduce((sum, p) => sum + p.stats.completed_tasks, 0),
+        inProgressTasks: projects.reduce((sum, p) => sum + p.stats.in_progress_tasks, 0),
+        totalModels: models.length,
+        activeModels: models.filter(m => m.is_active).length,
+      };
+
+      setStats(dashboardStats);
+    } catch (error) {
+      console.error('Failed to load dashboard stats:', error);
+      // 如果出现错误，保持默认的0值
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const checkApiStatus = async () => {
@@ -27,7 +91,8 @@ export default function Home() {
     };
 
     checkApiStatus();
-  }, []);
+    loadDashboardStats();
+  }, [isAuthenticated]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -52,12 +117,51 @@ export default function Home() {
   };
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">欢迎使用 TaskMaster AI</h2>
-        <p className="text-muted-foreground">
-          智能任务管理系统，让项目管理更高效
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">欢迎使用 TaskMaster AI</h2>
+          <p className="text-muted-foreground">
+            智能任务管理系统，让项目管理更高效
+          </p>
+        </div>
+        {isAuthenticated && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadDashboardStats()}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            刷新数据
+          </Button>
+        )}
       </div>
+
+      {!isAuthenticated && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0">
+                <AlertCircle className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-medium text-blue-900">需要登录</h3>
+                <p className="text-blue-700 text-sm">
+                  请使用默认管理员账户登录以查看项目数据和使用完整功能
+                </p>
+                <div className="mt-3 flex space-x-3">
+                  <Button asChild size="sm">
+                    <Link href="/login">立即登录</Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/debug">系统调试</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -68,9 +172,11 @@ export default function Home() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {!isAuthenticated ? '--' : loading ? '...' : stats.totalProjects}
+            </div>
             <p className="text-xs text-muted-foreground">
-              暂无项目
+              {!isAuthenticated ? '请先登录' : stats.totalProjects === 0 ? '暂无项目' : `${stats.activeProjects} 个活跃项目`}
             </p>
           </CardContent>
         </Card>
@@ -82,9 +188,11 @@ export default function Home() {
             <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {!isAuthenticated ? '--' : loading ? '...' : stats.inProgressTasks}
+            </div>
             <p className="text-xs text-muted-foreground">
-              暂无任务
+              {!isAuthenticated ? '请先登录' : stats.totalTasks === 0 ? '暂无任务' : `总共 ${stats.totalTasks} 个任务`}
             </p>
           </CardContent>
         </Card>
@@ -110,9 +218,11 @@ export default function Home() {
             <Settings className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">未配置</div>
+            <div className="text-2xl font-bold">
+              {!isAuthenticated ? '--' : loading ? '...' : stats.totalModels === 0 ? '未配置' : stats.activeModels}
+            </div>
             <p className="text-xs text-muted-foreground">
-              需要配置API密钥
+              {!isAuthenticated ? '请先登录' : stats.totalModels === 0 ? '需要配置API密钥' : `总共 ${stats.totalModels} 个模型`}
             </p>
           </CardContent>
         </Card>
@@ -191,10 +301,9 @@ export default function Home() {
               <span className="text-sm">后端API</span>
               <div className="flex items-center space-x-2">
                 {getStatusIcon(apiStatus)}
-                <span className={`text-sm ${
-                  apiStatus === 'connected' ? 'text-green-600' : 
-                  apiStatus === 'disconnected' ? 'text-red-600' : 'text-yellow-600'
-                }`}>
+                <span className={`text-sm ${apiStatus === 'connected' ? 'text-green-600' :
+                    apiStatus === 'disconnected' ? 'text-red-600' : 'text-yellow-600'
+                  }`}>
                   {getStatusText(apiStatus)}
                 </span>
               </div>
@@ -206,7 +315,7 @@ export default function Home() {
                 <span className="text-sm text-yellow-600">需要配置</span>
               </div>
             </div>
-            
+
             {!isAuthenticated && (
               <div className="pt-4 border-t">
                 <p className="text-sm text-gray-600 mb-3">
