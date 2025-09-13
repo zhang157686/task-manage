@@ -50,7 +50,7 @@ export default function ModelsPage() {
       setModels(data);
     } catch (error) {
       console.error('Failed to load models:', error);
-      toast.error('Failed to load models');
+      toast.error('加载模型失败');
     } finally {
       setLoading(false);
     }
@@ -59,12 +59,12 @@ export default function ModelsPage() {
   const handleCreateModel = async (data: any) => {
     try {
       await modelsService.createModel(data);
-      toast.success('Model created successfully');
+      toast.success('模型创建成功');
       setIsCreateDialogOpen(false);
       loadModels();
     } catch (error: any) {
       console.error('Failed to create model:', error);
-      toast.error(error.response?.data?.detail || 'Failed to create model');
+      toast.error(error.response?.data?.detail || '创建模型失败');
     }
   };
 
@@ -73,50 +73,50 @@ export default function ModelsPage() {
 
     try {
       await modelsService.updateModel(selectedModel.id, data);
-      toast.success('Model updated successfully');
+      toast.success('模型更新成功');
       setIsEditDialogOpen(false);
       setSelectedModel(null);
       loadModels();
     } catch (error: any) {
       console.error('Failed to update model:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update model');
+      toast.error(error.response?.data?.detail || '更新模型失败');
     }
   };
 
   const handleDeleteModel = async (model: AIModel) => {
-    if (!confirm(`Are you sure you want to delete "${model.name}"?`)) {
+    if (!confirm(`确定要删除模型 "${model.name}" 吗？`)) {
       return;
     }
 
     try {
       await modelsService.deleteModel(model.id);
-      toast.success('Model deleted successfully');
+      toast.success('模型删除成功');
       loadModels();
     } catch (error: any) {
       console.error('Failed to delete model:', error);
-      toast.error(error.response?.data?.detail || 'Failed to delete model');
+      toast.error(error.response?.data?.detail || '删除模型失败');
     }
   };
 
   const handleSetDefault = async (model: AIModel) => {
     try {
       await modelsService.setDefaultModel(model.id);
-      toast.success(`"${model.name}" set as default model`);
+      toast.success(`"${model.name}" 已设为默认模型`);
       loadModels();
     } catch (error: any) {
       console.error('Failed to set default model:', error);
-      toast.error(error.response?.data?.detail || 'Failed to set default model');
+      toast.error(error.response?.data?.detail || '设置默认模型失败');
     }
   };
 
   const handleToggleStatus = async (model: AIModel) => {
     try {
       await modelsService.toggleModelStatus(model.id, !model.is_active);
-      toast.success(`Model ${model.is_active ? 'disabled' : 'enabled'} successfully`);
+      toast.success(`模型${model.is_active ? '已禁用' : '已启用'}`);
       loadModels();
     } catch (error: any) {
       console.error('Failed to toggle model status:', error);
-      toast.error(error.response?.data?.detail || 'Failed to toggle model status');
+      toast.error(error.response?.data?.detail || '切换模型状态失败');
     }
   };
 
@@ -140,7 +140,7 @@ export default function ModelsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Loading models...</p>
+            <p className="mt-2 text-sm text-gray-600">加载模型中...</p>
           </div>
         </div>
       </div>
@@ -152,23 +152,23 @@ export default function ModelsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">AI Models</h1>
+          <h1 className="text-3xl font-bold">AI模型配置</h1>
           <p className="text-gray-600 mt-1">
-            Manage your AI model configurations for task generation
+            管理用于任务生成的AI模型配置
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Add Model
+              添加模型
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New AI Model</DialogTitle>
+              <DialogTitle>添加新的AI模型</DialogTitle>
               <DialogDescription>
-                Configure a new AI model for task generation and management.
+                配置用于任务生成和管理的新AI模型。
               </DialogDescription>
             </DialogHeader>
             <ModelForm onSubmit={handleCreateModel} />
@@ -180,7 +180,7 @@ export default function ModelsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Models</CardTitle>
+            <CardTitle className="text-sm font-medium">模型总数</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{models.length}</div>
@@ -188,7 +188,7 @@ export default function ModelsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active Models</CardTitle>
+            <CardTitle className="text-sm font-medium">活跃模型</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
@@ -198,11 +198,11 @@ export default function ModelsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Default Model</CardTitle>
+            <CardTitle className="text-sm font-medium">默认模型</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm font-medium">
-              {models.find(m => m.is_default)?.name || 'None'}
+              {models.find(m => m.is_default)?.name || '无'}
             </div>
           </CardContent>
         </Card>
@@ -211,30 +211,30 @@ export default function ModelsPage() {
       {/* Models Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Model Configurations</CardTitle>
+          <CardTitle>模型配置</CardTitle>
           <CardDescription>
-            Manage your AI model settings and configurations
+            管理您的AI模型设置和配置
           </CardDescription>
         </CardHeader>
         <CardContent>
           {models.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No models configured yet</p>
+              <p className="text-gray-500 mb-4">尚未配置任何模型</p>
               <Button onClick={() => setIsCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Your First Model
+                添加您的第一个模型
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Model ID</TableHead>
-                  <TableHead>API Key</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>名称</TableHead>
+                  <TableHead>提供商</TableHead>
+                  <TableHead>模型ID</TableHead>
+                  <TableHead>API密钥</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -244,7 +244,7 @@ export default function ModelsPage() {
                       <div className="flex items-center space-x-2">
                         <span className="font-medium">{model.name}</span>
                         {model.is_default && (
-                          <Badge variant="secondary">Default</Badge>
+                          <Badge variant="secondary">默认</Badge>
                         )}
                       </div>
                     </TableCell>
@@ -279,7 +279,7 @@ export default function ModelsPage() {
                         variant={model.is_active ? 'default' : 'secondary'}
                         className={model.is_active ? 'bg-green-100 text-green-800' : ''}
                       >
-                        {model.is_active ? 'Active' : 'Inactive'}
+                        {model.is_active ? '活跃' : '非活跃'}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -325,9 +325,9 @@ export default function ModelsPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Model</DialogTitle>
+            <DialogTitle>编辑模型</DialogTitle>
             <DialogDescription>
-              Update the configuration for "{selectedModel?.name}"
+              更新 "{selectedModel?.name}" 的配置
             </DialogDescription>
           </DialogHeader>
           {selectedModel && (

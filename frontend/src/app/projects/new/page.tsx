@@ -45,13 +45,13 @@ export default function NewProjectPage() {
         <Button variant="ghost" size="sm" asChild>
           <Link href="/projects">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Projects
+            返回项目列表
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Create New Project</h1>
+          <h1 className="text-3xl font-bold">创建新项目</h1>
           <p className="text-gray-600 mt-1">
-            Set up a new project to organize your tasks and track progress
+            设置新项目来组织您的任务并跟踪进展
           </p>
         </div>
       </div>
@@ -59,9 +59,9 @@ export default function NewProjectPage() {
       {/* Form Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Project Details</CardTitle>
+          <CardTitle>项目详情</CardTitle>
           <CardDescription>
-            Configure your project settings and preferences
+            配置您的项目设置和偏好
           </CardDescription>
         </CardHeader>
         <CardContent>

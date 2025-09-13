@@ -55,8 +55,8 @@ const settingsFormSchema = z.object({
   name: z.string().min(1, 'Project name is required').max(200, 'Name too long'),
   description: z.string().max(2000, 'Description too long').optional(),
   status: z.enum(['active', 'completed', 'paused', 'archived']),
-  repository_url: z.string().url('Invalid URL').optional().or(z.literal('')),
-  documentation_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  repository_url: z.string().url('无效的URL').optional().or(z.literal('')),
+  documentation_url: z.string().url('无效的URL').optional().or(z.literal('')),
   is_public: z.boolean(),
   
   // AI Settings
@@ -499,7 +499,7 @@ export default function ProjectSettingsPage() {
                     <FormItem>
                       <FormLabel>Team</FormLabel>
                       <FormControl>
-                        <Input placeholder="Development Team" {...field} />
+                        <Input placeholder="开发团队" {...field} />
                       </FormControl>
                       <FormDescription>
                         Team responsible for this project

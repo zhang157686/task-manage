@@ -71,6 +71,19 @@ export default function TaskKanbanPage() {
     }
   };
 
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return '高';
+      case 'medium':
+        return '中';
+      case 'low':
+        return '低';
+      default:
+        return '未知';
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
@@ -141,7 +154,7 @@ export default function TaskKanbanPage() {
                       </p>
                       <div className="flex items-center justify-between">
                         <Badge className={getPriorityColor(task.priority)} variant="secondary">
-                          {task.priority === 'high' ? '高' : task.priority === 'medium' ? '中' : '低'}
+                          {getPriorityLabel(task.priority)}
                         </Badge>
                         {task.assignee && (
                           <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">

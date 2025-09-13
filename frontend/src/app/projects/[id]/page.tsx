@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Settings, 
-  Edit, 
-  Trash2, 
-  Copy, 
-  ExternalLink, 
+import {
+  ArrowLeft,
+  Settings,
+  Edit,
+  Trash2,
+  Copy,
+  ExternalLink,
   Calendar,
   Users,
   Target,
@@ -47,7 +47,7 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = parseInt(params.id as string);
-  
+
   const [project, setProject] = useState<ProjectWithStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -104,11 +104,11 @@ export default function ProjectDetailPage() {
 
     try {
       const newProject = await projectsService.duplicateProject(project.id);
-      toast.success('Project duplicated successfully');
+      toast.success('项目复制成功');
       router.push(`/projects/${newProject.id}`);
     } catch (error: any) {
       console.error('Failed to duplicate project:', error);
-      toast.error(error.response?.data?.detail || 'Failed to duplicate project');
+      toast.error(error.response?.data?.detail || '复制项目失败');
     }
   };
 
@@ -135,7 +135,7 @@ export default function ProjectDetailPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Loading project...</p>
+            <p className="mt-2 text-sm text-gray-600">加载项目中...</p>
           </div>
         </div>
       </div>
@@ -146,12 +146,12 @@ export default function ProjectDetailPage() {
     return (
       <div className="container mx-auto py-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Project not found</h2>
-          <p className="text-gray-600 mt-2">The project you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-gray-900">项目未找到</h2>
+          <p className="text-gray-600 mt-2">您查找的项目不存在。</p>
           <Button asChild className="mt-4">
             <Link href="/projects">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Projects
+              返回项目列表
             </Link>
           </Button>
         </div>
@@ -165,7 +165,7 @@ export default function ProjectDetailPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/projects">Projects</BreadcrumbLink>
+            <BreadcrumbLink href="/projects">项目</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -181,20 +181,20 @@ export default function ProjectDetailPage() {
             <h1 className="text-3xl font-bold">{project.name}</h1>
             {getStatusBadge(project.status)}
             {project.is_public && (
-              <Badge variant="outline">Public</Badge>
+              <Badge variant="outline">公开</Badge>
             )}
           </div>
           {project.description && (
             <p className="text-gray-600 text-lg">{project.description}</p>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                编辑
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
@@ -211,19 +211,19 @@ export default function ProjectDetailPage() {
               />
             </DialogContent>
           </Dialog>
-          
+
           <Button variant="outline" asChild>
             <Link href={`/projects/${project.id}/settings`}>
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Link>
           </Button>
-          
+
           <Button variant="outline" onClick={handleDuplicateProject}>
             <Copy className="h-4 w-4 mr-2" />
             Duplicate
           </Button>
-          
+
           <Button variant="outline" onClick={handleDeleteProject}>
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
@@ -245,7 +245,7 @@ export default function ProjectDetailPage() {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
@@ -258,7 +258,7 @@ export default function ProjectDetailPage() {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Created</CardTitle>
@@ -271,7 +271,7 @@ export default function ProjectDetailPage() {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Last Activity</CardTitle>
@@ -282,7 +282,7 @@ export default function ProjectDetailPage() {
               {project.stats.last_activity ? 'Recent' : 'None'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {project.stats.last_activity 
+              {project.stats.last_activity
                 ? formatDate(project.stats.last_activity)
                 : 'No recent activity'
               }
@@ -307,7 +307,7 @@ export default function ProjectDetailPage() {
                 <span>{project.stats.completion_percentage.toFixed(1)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
+                <div
                   className="bg-blue-600 h-3 rounded-full transition-all"
                   style={{ width: `${project.stats.completion_percentage}%` }}
                 />
@@ -335,17 +335,17 @@ export default function ProjectDetailPage() {
                 {getStatusBadge(project.status)}
               </div>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500">Visibility</h4>
               <p className="mt-1">{project.is_public ? 'Public' : 'Private'}</p>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500">Created</h4>
               <p className="mt-1">{formatDate(project.created_at)}</p>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500">Last Updated</h4>
               <p className="mt-1">{formatDate(project.updated_at)}</p>
@@ -362,7 +362,7 @@ export default function ProjectDetailPage() {
             {project.repository_url && (
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Repository</h4>
-                <a 
+                <a
                   href={project.repository_url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -373,11 +373,11 @@ export default function ProjectDetailPage() {
                 </a>
               </div>
             )}
-            
+
             {project.documentation_url && (
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Documentation</h4>
-                <a 
+                <a
                   href={project.documentation_url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -388,19 +388,19 @@ export default function ProjectDetailPage() {
                 </a>
               </div>
             )}
-            
+
             <Separator />
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500">AI Output Language</h4>
               <p className="mt-1">{project.settings.ai_output_language}</p>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500">Task Template</h4>
               <p className="mt-1">{project.settings.task_format_template}</p>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500">Default Priority</h4>
               <p className="mt-1 capitalize">{project.settings.default_priority}</p>

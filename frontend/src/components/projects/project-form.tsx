@@ -38,11 +38,11 @@ import {
 
 // Form validation schema
 const projectFormSchema = z.object({
-  name: z.string().min(1, 'Project name is required').max(200, 'Name too long'),
-  description: z.string().max(2000, 'Description too long').optional(),
+  name: z.string().min(1, '项目名称不能为空').max(200, '名称过长'),
+  description: z.string().max(2000, '描述过长').optional(),
   status: z.enum(['active', 'completed', 'paused', 'archived']).default('active'),
-  repository_url: z.string().url('Invalid URL').optional().or(z.literal('')),
-  documentation_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  repository_url: z.string().url('无效的URL').optional().or(z.literal('')),
+  documentation_url: z.string().url('无效的URL').optional().or(z.literal('')),
   is_public: z.boolean().default(false),
   // Settings
   ai_output_language: z.string().default('中文'),
@@ -111,9 +111,9 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
         {/* Basic Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
+            <CardTitle>基本信息</CardTitle>
             <CardDescription>
-              Configure the basic details for your project
+              配置项目的基本详情
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -122,12 +122,12 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Name</FormLabel>
+                  <FormLabel>项目名称</FormLabel>
                   <FormControl>
-                    <Input placeholder="My Awesome Project" {...field} />
+                    <Input placeholder="我的项目" {...field} />
                   </FormControl>
                   <FormDescription>
-                    A clear, descriptive name for your project
+                    为您的项目起一个清晰、描述性的名称
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -139,16 +139,16 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>项目描述</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe what this project is about..."
+                      placeholder="描述这个项目的内容..."
                       className="min-h-[100px]"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Optional description to help you and others understand the project's purpose
+                    可选的描述，帮助您和其他人理解项目的目的
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -161,11 +161,11 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>状态</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue placeholder="选择状态" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -187,9 +187,9 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Public Project</FormLabel>
+                      <FormLabel className="text-base">公开项目</FormLabel>
                       <FormDescription>
-                        Make this project visible to others
+                        让其他人可以看到这个项目
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -208,9 +208,9 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
         {/* URLs */}
         <Card>
           <CardHeader>
-            <CardTitle>Project Links</CardTitle>
+            <CardTitle>项目链接</CardTitle>
             <CardDescription>
-              Optional links to related resources
+              可选的相关资源链接
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -219,7 +219,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
               name="repository_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Repository URL</FormLabel>
+                  <FormLabel>代码仓库URL</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="https://github.com/username/project"
@@ -227,7 +227,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                     />
                   </FormControl>
                   <FormDescription>
-                    Link to your project's source code repository
+                    项目源代码仓库的链接
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -239,7 +239,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
               name="documentation_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Documentation URL</FormLabel>
+                  <FormLabel>文档URL</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="https://docs.example.com"
@@ -247,7 +247,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                     />
                   </FormControl>
                   <FormDescription>
-                    Link to your project's documentation
+                    项目文档的链接
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -259,9 +259,9 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
         {/* AI Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>AI & Task Settings</CardTitle>
+            <CardTitle>AI与任务设置</CardTitle>
             <CardDescription>
-              Configure how AI will generate and manage tasks for this project
+              配置AI如何为此项目生成和管理任务
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -271,11 +271,11 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 name="ai_output_language"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>AI Output Language</FormLabel>
+                    <FormLabel>AI输出语言</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select language" />
+                          <SelectValue placeholder="选择语言" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -287,7 +287,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Language for AI-generated content
+                      AI生成内容的语言
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -299,11 +299,11 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 name="task_format_template"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Task Format Template</FormLabel>
+                    <FormLabel>任务格式模板</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select template" />
+                          <SelectValue placeholder="选择模板" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -315,7 +315,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Template for task structure and format
+                      任务结构和格式的模板
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -327,11 +327,11 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 name="default_priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Default Task Priority</FormLabel>
+                    <FormLabel>默认任务优先级</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select priority" />
+                          <SelectValue placeholder="选择优先级" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -343,7 +343,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Default priority for new tasks
+                      新任务的默认优先级
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -358,9 +358,9 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Auto-Generate Tasks</FormLabel>
+                      <FormLabel className="text-base">自动生成任务</FormLabel>
                       <FormDescription>
-                        Automatically generate tasks based on project requirements
+                        根据项目需求自动生成任务
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -379,9 +379,9 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Enable Notifications</FormLabel>
+                      <FormLabel className="text-base">启用通知</FormLabel>
                       <FormDescription>
-                        Receive notifications about project updates and task changes
+                        接收项目更新和任务变更的通知
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -401,7 +401,7 @@ export function ProjectForm({ initialData, onSubmit, isEditing = false }: Projec
 
         <div className="flex justify-end space-x-2">
           <Button type="submit">
-            {isEditing ? 'Update Project' : 'Create Project'}
+            {isEditing ? '更新项目' : '创建项目'}
           </Button>
         </div>
       </form>

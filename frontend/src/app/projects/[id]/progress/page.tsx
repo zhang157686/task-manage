@@ -122,7 +122,7 @@ export default function ProjectProgressPage() {
       setSaving(true);
       const updatedProgress = await projectProgressService.updateProgress(projectId, {
         content: editContent,
-        change_summary: 'Document updated',
+        change_summary: '文档已更新',
       });
       
       setProgress(updatedProgress);
