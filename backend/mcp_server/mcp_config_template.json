@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "task-manager": {
+      "command": "python",
+      "args": ["/path/to/backend/mcp_server/start.py"],
+      "env": {
+        "MCP_API_BASE_URL": "http://localhost:8000",
+        "MCP_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
