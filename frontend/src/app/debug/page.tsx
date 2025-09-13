@@ -191,7 +191,7 @@ export default function DebugPage() {
               <div>
                 <h4 className="font-medium">3. 数据库连接问题</h4>
                 <p className="text-sm text-gray-600 mt-1">
-                  确保MySQL服务运行在localhost:3303，数据库名为taskmaster
+                  确保MySQL服务运行在localhost:3303，数据库名为taskmanage
                 </p>
               </div>
             </div>

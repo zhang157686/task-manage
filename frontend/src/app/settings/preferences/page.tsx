@@ -42,7 +42,7 @@ export default function PreferencesPage() {
         <div>
           <h1 className="text-3xl font-bold">系统偏好</h1>
           <p className="text-gray-600 mt-1">
-            个性化您的TaskMaster使用体验
+            个性化您的TaskManage使用体验
           </p>
         </div>
       </div>

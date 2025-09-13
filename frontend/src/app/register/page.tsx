@@ -70,7 +70,7 @@ export default function RegisterPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">注册</CardTitle>
           <CardDescription className="text-center">
-            创建您的 TaskMaster AI 账户
+            创建您的 TaskManage 账户
           </CardDescription>
         </CardHeader>
         <CardContent>

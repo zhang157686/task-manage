@@ -117,9 +117,9 @@ export default function Home() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">欢迎使用 TaskMaster AI</h2>
+          <h2 className="text-3xl font-bold tracking-tight">欢迎使用 TaskManage</h2>
           <p className="text-muted-foreground">
-            智能任务管理系统，让项目管理更高效
+            VibeCoding战略指挥中心，让项目管理更高效
           </p>
         </div>
         {isAuthenticated && (
@@ -231,7 +231,7 @@ export default function Home() {
           <CardHeader>
             <CardTitle>快速开始</CardTitle>
             <CardDescription>
-              开始使用 TaskMaster AI 管理您的项目
+              开始使用 TaskManage 管理您的项目
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

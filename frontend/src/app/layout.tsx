@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TaskMaster AI - 智能任务管理系统",
+  title: "TaskManage - VibeCoding战略指挥中心",
   description: "基于AI的项目任务管理和生成系统",
 };
 

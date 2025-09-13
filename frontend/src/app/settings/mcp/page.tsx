@@ -48,7 +48,7 @@ export default function MCPSettingsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <XCircle className="h-4 w-4 text-red-500" />
-                <span className="text-sm">TaskMaster工具</span>
+                <span className="text-sm">TaskManage工具</span>
               </div>
               <Badge variant="destructive">未连接</Badge>
             </div>
@@ -102,7 +102,7 @@ export default function MCPSettingsPage() {
               <div>
                 <h4 className="font-medium">测试连接</h4>
                 <p className="text-sm text-gray-600">
-                  验证MCP工具是否正常工作并可以与TaskMaster通信
+                  验证MCP工具是否正常工作并可以与TaskManage通信
                 </p>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function MCPSettingsPage() {
         <CardHeader>
           <CardTitle>可用工具</CardTitle>
           <CardDescription>
-            TaskMaster提供的MCP工具列表
+            TaskManage提供的MCP工具列表
           </CardDescription>
         </CardHeader>
         <CardContent>

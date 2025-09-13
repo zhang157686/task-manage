@@ -124,7 +124,7 @@ export default function ApiKeysPage() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">API密钥管理</h2>
         <p className="text-muted-foreground">
-          管理您的API密钥，用于访问TaskMaster AI的API服务
+          管理您的API密钥，用于访问TaskManage的API服务
         </p>
       </div>
 
@@ -175,7 +175,7 @@ export default function ApiKeysPage() {
           <DialogHeader>
             <DialogTitle>创建API密钥</DialogTitle>
             <DialogDescription>
-              创建一个新的API密钥来访问TaskMaster AI的服务
+              创建一个新的API密钥来访问TaskManage的服务
             </DialogDescription>
           </DialogHeader>
           {newKeyValue ? (
