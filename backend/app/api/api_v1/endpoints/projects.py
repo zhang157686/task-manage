@@ -6,7 +6,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, get_current_user
+from app.core.deps import get_db, get_current_user, get_current_user_by_api_key
 from app.models.user import User
 from app.schemas.project import (
     ProjectCreate,
@@ -35,7 +35,7 @@ async def get_projects(
     status: Optional[ProjectStatus] = Query(None),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_by_api_key)
 ):
     """Get all projects for current user"""
     if search:
@@ -217,7 +217,7 @@ async def get_project_tasks(
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(50, ge=1, le=100, description="限制数量"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_by_api_key)
 ):
     """Get all tasks for a specific project"""
     # Verify project ownership

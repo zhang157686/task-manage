@@ -10,7 +10,7 @@ from pathlib import Path
 
 from fastmcp import FastMCP
 from .config import config
-from .auth import authenticator
+from .auth import authenticator, require_auth
 
 
 # Configure logging
@@ -97,11 +97,14 @@ async def init_project(
 
 
 @mcp.tool()
+@require_auth
 async def get_tasks(
     project_id: str,
     status: Optional[str] = None,
     include_subtasks: bool = True,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    _api_key: Optional[str] = None,
+    _user_info: Optional[Dict] = None
 ) -> Dict[str, Any]:
     """
     Get all tasks for a project.
@@ -110,31 +113,23 @@ async def get_tasks(
         project_id: ID of the project
         status: Filter by task status (optional)
         include_subtasks: Whether to include subtasks
-        api_key: API key for authentication
+        api_key: API key for authentication (optional if set in environment/config)
     
     Returns:
         List of tasks with their details
     """
     try:
-        if not api_key:
-            return {"success": False, "error": "API key required"}
-        
-        # Validate API key
-        user_info = await authenticator.validate_api_key(api_key)
-        if not user_info:
-            return {"success": False, "error": "Invalid API key"}
-        
         # Build query parameters
         params = {"project_id": project_id}
         if status:
             params["status"] = status
         
-        # Make API request
+        # Make API request using validated API key
         import httpx
         async with httpx.AsyncClient(timeout=config.api_timeout) as client:
             response = await client.get(
                 f"{config.api_base_url}/api/v1/projects/{project_id}/tasks",
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers={"Authorization": f"Bearer {_api_key}"},
                 params=params
             )
             
@@ -145,7 +140,8 @@ async def get_tasks(
                     "project_id": project_id,
                     "tasks": tasks_data,
                     "total_count": len(tasks_data),
-                    "filter_status": status
+                    "filter_status": status,
+                    "user": _user_info.get("email")
                 }
             else:
                 return {
@@ -158,42 +154,38 @@ async def get_tasks(
 
 
 @mcp.tool()
+@require_auth
 async def get_task(
     task_id: str,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    _api_key: Optional[str] = None,
+    _user_info: Optional[Dict] = None
 ) -> Dict[str, Any]:
     """
     Get detailed information about a specific task.
     
     Args:
         task_id: ID of the task
-        api_key: API key for authentication
+        api_key: API key for authentication (optional if set in environment/config)
     
     Returns:
         Detailed task information
     """
     try:
-        if not api_key:
-            return {"success": False, "error": "API key required"}
-        
-        # Validate API key
-        user_info = await authenticator.validate_api_key(api_key)
-        if not user_info:
-            return {"success": False, "error": "Invalid API key"}
-        
-        # Make API request
+        # Make API request using validated API key
         import httpx
         async with httpx.AsyncClient(timeout=config.api_timeout) as client:
             response = await client.get(
                 f"{config.api_base_url}/api/v1/tasks/{task_id}",
-                headers={"Authorization": f"Bearer {api_key}"}
+                headers={"Authorization": f"Bearer {_api_key}"}
             )
             
             if response.status_code == 200:
                 task_data = response.json()
                 return {
                     "success": True,
-                    "task": task_data
+                    "task": task_data,
+                    "user": _user_info.get("email")
                 }
             elif response.status_code == 404:
                 return {
@@ -211,31 +203,26 @@ async def get_task(
 
 
 @mcp.tool()
+@require_auth
 async def set_task_status(
     task_id: str,
     status: str,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    _api_key: Optional[str] = None,
+    _user_info: Optional[Dict] = None
 ) -> Dict[str, Any]:
     """
     Update the status of a task.
     
     Args:
         task_id: ID of the task
-        status: New status (pending, in_progress, completed, blocked)
-        api_key: API key for authentication
+        status: New status (pending, in_progress, completed, blocked, cancelled)
+        api_key: API key for authentication (optional if set in environment/config)
     
     Returns:
         Update result
     """
     try:
-        if not api_key:
-            return {"success": False, "error": "API key required"}
-        
-        # Validate API key
-        user_info = await authenticator.validate_api_key(api_key)
-        if not user_info:
-            return {"success": False, "error": "Invalid API key"}
-        
         # Validate status
         valid_statuses = ["pending", "in_progress", "completed", "blocked", "cancelled"]
         if status not in valid_statuses:
@@ -244,12 +231,12 @@ async def set_task_status(
                 "error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
             }
         
-        # Make API request
+        # Make API request using validated API key
         import httpx
         async with httpx.AsyncClient(timeout=config.api_timeout) as client:
             response = await client.patch(
                 f"{config.api_base_url}/api/v1/tasks/{task_id}/status",
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers={"Authorization": f"Bearer {_api_key}"},
                 json={"status": status}
             )
             
@@ -258,7 +245,8 @@ async def set_task_status(
                     "success": True,
                     "message": f"Task {task_id} status updated to {status}",
                     "task_id": task_id,
-                    "new_status": status
+                    "new_status": status,
+                    "user": _user_info.get("email")
                 }
             elif response.status_code == 404:
                 return {
@@ -276,10 +264,13 @@ async def set_task_status(
 
 
 @mcp.tool()
+@require_auth
 async def update_project(
     project_id: str,
     updates: Dict[str, Any],
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    _api_key: Optional[str] = None,
+    _user_info: Optional[Dict] = None
 ) -> Dict[str, Any]:
     """
     Update project information or progress documentation.
@@ -287,26 +278,18 @@ async def update_project(
     Args:
         project_id: ID of the project
         updates: Dictionary of updates to apply
-        api_key: API key for authentication
+        api_key: API key for authentication (optional if set in environment/config)
     
     Returns:
         Update result
     """
     try:
-        if not api_key:
-            return {"success": False, "error": "API key required"}
-        
-        # Validate API key
-        user_info = await authenticator.validate_api_key(api_key)
-        if not user_info:
-            return {"success": False, "error": "Invalid API key"}
-        
-        # Make API request
+        # Make API request using validated API key
         import httpx
         async with httpx.AsyncClient(timeout=config.api_timeout) as client:
             response = await client.put(
                 f"{config.api_base_url}/api/v1/projects/{project_id}",
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers={"Authorization": f"Bearer {_api_key}"},
                 json=updates
             )
             
@@ -316,7 +299,8 @@ async def update_project(
                     "success": True,
                     "message": f"Project {project_id} updated successfully",
                     "project": updated_project,
-                    "updated_fields": list(updates.keys())
+                    "updated_fields": list(updates.keys()),
+                    "user": _user_info.get("email")
                 }
             elif response.status_code == 404:
                 return {
@@ -334,35 +318,30 @@ async def update_project(
 
 
 @mcp.tool()
+@require_auth
 async def get_progress(
     project_id: str,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    _api_key: Optional[str] = None,
+    _user_info: Optional[Dict] = None
 ) -> Dict[str, Any]:
     """
     Get project progress information and statistics.
     
     Args:
         project_id: ID of the project
-        api_key: API key for authentication
+        api_key: API key for authentication (optional if set in environment/config)
     
     Returns:
         Project progress information
     """
     try:
-        if not api_key:
-            return {"success": False, "error": "API key required"}
-        
-        # Validate API key
-        user_info = await authenticator.validate_api_key(api_key)
-        if not user_info:
-            return {"success": False, "error": "Invalid API key"}
-        
-        # Make API request
+        # Make API request using validated API key
         import httpx
         async with httpx.AsyncClient(timeout=config.api_timeout) as client:
             response = await client.get(
                 f"{config.api_base_url}/api/v1/projects/{project_id}/progress",
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers={"Authorization": f"Bearer {_api_key}"},
             )
             
             if response.status_code == 200:
@@ -370,7 +349,8 @@ async def get_progress(
                 return {
                     "success": True,
                     "project_id": project_id,
-                    "progress": progress_data
+                    "progress": progress_data,
+                    "user": _user_info.get("email")
                 }
             elif response.status_code == 404:
                 return {

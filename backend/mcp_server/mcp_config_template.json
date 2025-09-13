@@ -5,7 +5,9 @@
       "args": ["/path/to/backend/mcp_server/start.py"],
       "env": {
         "MCP_API_BASE_URL": "http://localhost:8000",
-        "MCP_LOG_LEVEL": "INFO"
+        "MCP_LOG_LEVEL": "INFO",
+        "MCP_DEFAULT_API_KEY": "your-api-key-here",
+        "MCP_CONFIG_FILE_PATH": "~/.task-manager-mcp.json"
       }
     }
   }

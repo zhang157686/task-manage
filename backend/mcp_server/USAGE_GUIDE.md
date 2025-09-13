@@ -55,7 +55,14 @@ python mcp_server/start.py --transport http --port 8001
 
 ## Claude Desktop 集成
 
-### 1. 配置文件
+### 1. 获取 API 密钥
+
+1. 访问前端应用：http://localhost:3000
+2. 注册/登录用户账户
+3. 在用户设置中创建 API 密钥
+4. 复制生成的 API 密钥
+
+### 2. 配置文件
 
 将以下配置添加到 Claude Desktop 的 MCP 配置文件中：
 
@@ -64,31 +71,60 @@ python mcp_server/start.py --transport http --port 8001
   "mcpServers": {
     "task-manager": {
       "command": "python",
-      "args": [
-        "E:\\path\\to\\your\\project\\backend\\mcp_server\\start.py"
-      ],
+      "args": ["E:\\path\\to\\your\\project\\backend\\mcp_server\\start.py"],
       "env": {
         "MCP_API_BASE_URL": "http://localhost:8000",
-        "MCP_LOG_LEVEL": "INFO"
+        "MCP_LOG_LEVEL": "INFO",
+        "MCP_DEFAULT_API_KEY": "your-api-key-here"
       }
     }
   }
 }
 ```
 
-### 2. 获取 API 密钥
+### 3. API 密钥配置方式（三种方式任选其一）
 
-1. 访问前端应用：http://localhost:3000
-2. 注册/登录用户账户
-3. 在用户设置中创建 API 密钥
-4. 复制生成的 API 密钥
+#### 方式一：环境变量配置（推荐）
 
-### 3. 初始化配置
+在 MCP 配置文件的 `env` 部分设置：
 
-在 Claude Desktop 中使用以下命令初始化：
+```json
+"env": {
+  "MCP_DEFAULT_API_KEY": "your-api-key-here"
+}
+```
+
+#### 方式二：初始化配置文件
+
+在 Claude Desktop 中运行一次初始化命令：
 
 ```
 init_project(api_key="your-api-key-here", project_id="1")
+```
+
+这会在用户目录下创建 `~/.task-manager-mcp.json` 配置文件。
+
+#### 方式三：每次手动传参
+
+在每个工具调用时手动传入 API 密钥：
+
+```
+get_tasks(project_id="1", api_key="your-api-key-here")
+```
+
+### 4. 使用工具
+
+配置完成后，可以直接使用工具而无需每次传入 API 密钥：
+
+```
+# 获取任务列表
+get_tasks(project_id="1")
+
+# 获取特定任务
+get_task(task_id="123")
+
+# 更新任务状态
+set_task_status(task_id="123", status="completed")
 ```
 
 ## MCP 工具详细说明
@@ -98,12 +134,14 @@ init_project(api_key="your-api-key-here", project_id="1")
 初始化 MCP 客户端配置。
 
 **参数：**
+
 - `api_key` (必需): API 密钥
 - `project_id` (可选): 项目 ID
 - `api_url` (可选): API 基础 URL
 - `config_path` (可选): 配置文件保存路径
 
 **示例：**
+
 ```python
 init_project(
     api_key="sk-1234567890abcdef",
@@ -117,18 +155,20 @@ init_project(
 获取项目的所有任务。
 
 **参数：**
+
 - `project_id` (必需): 项目 ID
 - `status` (可选): 状态筛选
 - `include_subtasks` (可选): 是否包含子任务
-- `api_key` (可选): API 密钥
+- `api_key` (可选): API 密钥（如已在环境变量或配置文件中设置则无需传入）
 
 **示例：**
+
 ```python
-get_tasks(
-    project_id="1",
-    status="pending",
-    api_key="sk-1234567890abcdef"
-)
+# 使用环境变量中的 API 密钥
+get_tasks(project_id="1", status="pending")
+
+# 或手动指定 API 密钥
+get_tasks(project_id="1", status="pending", api_key="sk-1234567890abcdef")
 ```
 
 ### get_task
@@ -136,15 +176,18 @@ get_tasks(
 获取特定任务的详细信息。
 
 **参数：**
+
 - `task_id` (必需): 任务 ID
-- `api_key` (可选): API 密钥
+- `api_key` (可选): API 密钥（如已在环境变量或配置文件中设置则无需传入）
 
 **示例：**
+
 ```python
-get_task(
-    task_id="123",
-    api_key="sk-1234567890abcdef"
-)
+# 使用环境变量中的 API 密钥
+get_task(task_id="123")
+
+# 或手动指定 API 密钥
+get_task(task_id="123", api_key="sk-1234567890abcdef")
 ```
 
 ### set_task_status
@@ -152,17 +195,19 @@ get_task(
 更新任务状态。
 
 **参数：**
+
 - `task_id` (必需): 任务 ID
 - `status` (必需): 新状态 (pending, in_progress, completed, blocked, cancelled)
-- `api_key` (可选): API 密钥
+- `api_key` (可选): API 密钥（如已在环境变量或配置文件中设置则无需传入）
 
 **示例：**
+
 ```python
-set_task_status(
-    task_id="123",
-    status="completed",
-    api_key="sk-1234567890abcdef"
-)
+# 使用环境变量中的 API 密钥
+set_task_status(task_id="123", status="completed")
+
+# 或手动指定 API 密钥
+set_task_status(task_id="123", status="completed", api_key="sk-1234567890abcdef")
 ```
 
 ### update_project
@@ -170,12 +215,21 @@ set_task_status(
 更新项目信息。
 
 **参数：**
+
 - `project_id` (必需): 项目 ID
 - `updates` (必需): 更新内容字典
-- `api_key` (可选): API 密钥
+- `api_key` (可选): API 密钥（如已在环境变量或配置文件中设置则无需传入）
 
 **示例：**
+
 ```python
+# 使用环境变量中的 API 密钥
+update_project(
+    project_id="1",
+    updates={"name": "新项目名称", "description": "更新的描述"}
+)
+
+# 或手动指定 API 密钥
 update_project(
     project_id="1",
     updates={"name": "新项目名称", "description": "更新的描述"},
@@ -188,15 +242,18 @@ update_project(
 获取项目进展统计。
 
 **参数：**
+
 - `project_id` (必需): 项目 ID
-- `api_key` (可选): API 密钥
+- `api_key` (可选): API 密钥（如已在环境变量或配置文件中设置则无需传入）
 
 **示例：**
+
 ```python
-get_progress(
-    project_id="1",
-    api_key="sk-1234567890abcdef"
-)
+# 使用环境变量中的 API 密钥
+get_progress(project_id="1")
+
+# 或手动指定 API 密钥
+get_progress(project_id="1", api_key="sk-1234567890abcdef")
 ```
 
 ## 故障排除
@@ -204,11 +261,13 @@ get_progress(
 ### 常见问题
 
 1. **连接失败**
+
    - 确保主 API 服务器正在运行 (http://localhost:8000)
    - 检查防火墙设置
    - 验证端口是否被占用
 
 2. **认证失败**
+
    - 确认 API 密钥有效
    - 检查用户账户是否激活
    - 验证 API 密钥权限

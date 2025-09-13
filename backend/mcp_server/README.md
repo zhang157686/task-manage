@@ -51,12 +51,27 @@ Add to your Claude Desktop MCP configuration:
       "args": ["/absolute/path/to/backend/mcp_server/start.py"],
       "env": {
         "MCP_API_BASE_URL": "http://localhost:8000",
-        "MCP_LOG_LEVEL": "INFO"
+        "MCP_LOG_LEVEL": "INFO",
+        "MCP_DEFAULT_API_KEY": "your-api-key-here"
       }
     }
   }
 }
 ```
+
+## API Key Configuration
+
+The MCP server supports multiple ways to provide API keys (in priority order):
+
+1. **Parameter**: Pass `api_key` parameter to each tool call
+2. **Environment Variable**: Set `MCP_DEFAULT_API_KEY` in the MCP configuration
+3. **Config File**: Use `init_project` to create `~/.task-manager-mcp.json`
+
+### Recommended Setup
+
+1. Get your API key from the web interface (http://localhost:3000)
+2. Add it to your MCP configuration as shown above
+3. Use tools without specifying `api_key` parameter
 
 ## MCP Tools
 
@@ -87,7 +102,11 @@ Get all tasks for a project.
 
 **Example:**
 ```
+# With environment variable set
 get_tasks(project_id="123", status="pending")
+
+# Or with manual API key
+get_tasks(project_id="123", status="pending", api_key="your-key")
 ```
 
 ### get_task
@@ -95,13 +114,12 @@ get_tasks(project_id="123", status="pending")
 Get detailed information about a specific task.
 
 **Parameters:**
-- `project_id` (required): Project ID
 - `task_id` (required): Task ID
-- `api_key` (optional): API key
+- `api_key` (optional): API key (auto-resolved from environment/config)
 
 **Example:**
 ```
-get_task(project_id="123", task_id="456")
+get_task(task_id="456")
 ```
 
 ### set_task_status
@@ -109,14 +127,13 @@ get_task(project_id="123", task_id="456")
 Update the status of a task.
 
 **Parameters:**
-- `project_id` (required): Project ID
 - `task_id` (required): Task ID
 - `status` (required): New status (pending, in_progress, completed, blocked, cancelled)
-- `api_key` (optional): API key
+- `api_key` (optional): API key (auto-resolved from environment/config)
 
 **Example:**
 ```
-set_task_status(project_id="123", task_id="456", status="completed")
+set_task_status(task_id="456", status="completed")
 ```
 
 ### update_project
@@ -126,7 +143,7 @@ Update project information.
 **Parameters:**
 - `project_id` (required): Project ID
 - `updates` (required): Dictionary of updates
-- `api_key` (optional): API key
+- `api_key` (optional): API key (auto-resolved from environment/config)
 
 **Example:**
 ```
@@ -139,7 +156,7 @@ Get project progress statistics.
 
 **Parameters:**
 - `project_id` (required): Project ID
-- `api_key` (optional): API key
+- `api_key` (optional): API key (auto-resolved from environment/config)
 
 **Example:**
 ```
@@ -148,10 +165,12 @@ get_progress(project_id="123")
 
 ## Authentication
 
-All tools require authentication via API key. The API key can be:
-1. Passed as a parameter to each tool call
-2. Set in the MCP configuration file (created by `init_project`)
-3. Set as an environment variable
+All tools require authentication via API key. The API key is resolved automatically in this priority order:
+1. `api_key` parameter (if provided)
+2. `MCP_DEFAULT_API_KEY` environment variable
+3. Config file `~/.task-manager-mcp.json` (created by `init_project`)
+
+If no API key is found, the tool will return an error with instructions.
 
 ## Error Handling
 

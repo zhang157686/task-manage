@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
@@ -89,7 +90,7 @@ def get_current_superuser(
 
 def get_optional_current_user(
     db: Session = Depends(get_db),
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security)
 ) -> Optional[User]:
     """
     Get current user if authenticated, otherwise return None
@@ -118,7 +119,7 @@ def get_optional_current_user(
 
 def get_current_user_by_api_key(
     db: Session = Depends(get_db),
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security)
 ) -> User:
     """
     Get current user by API key authentication
