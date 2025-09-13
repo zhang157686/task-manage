@@ -30,8 +30,8 @@ class MCPAuthenticator:
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(
-                    f"{self.api_base_url}/api/auth/validate-key",
-                    headers={config.api_key_header: api_key}
+                    f"{self.api_base_url}/api/v1/auth/validate-key",
+                    headers={"Authorization": f"Bearer {api_key}"}
                 )
                 
                 if response.status_code == 200:
@@ -56,8 +56,8 @@ class MCPAuthenticator:
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(
-                    f"{self.api_base_url}/api/projects",
-                    headers={config.api_key_header: api_key}
+                    f"{self.api_base_url}/api/v1/projects",
+                    headers={"Authorization": f"Bearer {api_key}"}
                 )
                 
                 if response.status_code == 200:

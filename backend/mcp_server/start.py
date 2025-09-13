@@ -11,7 +11,7 @@ from pathlib import Path
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from mcp_server.server import main
+from mcp_server.server import mcp
 
 
 def parse_args():
@@ -54,4 +54,9 @@ if __name__ == "__main__":
     config.log_level = args.log_level
     
     # Run the server
-    asyncio.run(main())
+    if args.transport == "stdio":
+        mcp.run()
+    else:
+        # For HTTP transport, we need to implement this differently
+        print(f"HTTP transport not yet implemented. Use stdio transport for now.")
+        mcp.run()

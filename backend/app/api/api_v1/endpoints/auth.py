@@ -9,7 +9,7 @@ import logging
 
 from app.core.database import get_db
 from app.core.config import settings
-from app.core.deps import get_current_user, get_current_active_user
+from app.core.deps import get_current_user, get_current_active_user, get_current_user_by_api_key
 from app.services.auth import AuthService
 from app.schemas.user import UserCreate, UserResponse
 from app.schemas.auth import (
@@ -164,3 +164,13 @@ async def logout(
         message="Successfully logged out",
         success=True
     )
+
+
+@router.get("/validate-key", response_model=UserResponse)
+async def validate_api_key(
+    current_user: User = Depends(get_current_user_by_api_key)
+):
+    """
+    Validate API key and return user information
+    """
+    return current_user

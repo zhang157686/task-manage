@@ -260,11 +260,11 @@
             "id": 2,
             "title": "MCP工具实现",
             "description": "实现所有必需的MCP工具函数",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               7.1
             ],
-            "details": "1. 实现init工具：创建本地配置文件，包含API地址、密钥、项目ID等；2. 实现get_tasks工具：获取指定项目的所有任务列表；3. 实现get_task工具：获取指定任务的详细信息；4. 实现set_task_status工具：更新任务状态；5. 实现update_project工具：更新项目进展文档；6. 实现get_progress工具：获取项目进展情况；7. 所有工具都要包含详细的参数说明和错误处理。每个工具要提供清晰的使用说明和示例。"
+            "details": "1. 实现init工具：创建本地配置文件，包含API地址、密钥、项目ID等；2. 实现get_tasks工具：获取指定项目的所有任务列表；3. 实现get_task工具：获取指定任务的详细信息；4. 实现set_task_status工具：更新任务状态；5. 实现update_project工具：更新项目进展文档；6. 实现get_progress工具：获取项目进展情况；7. 所有工具都要包含详细的参数说明和错误处理。每个工具要提供清晰的使用说明和示例。\n<info added on 2025-09-13T02:41:05.264Z>\n8. MCP工具实现已完成：重构了MCP服务器架构，使用FastMCP最新语法和@mcp.tool()装饰器；实现了init_project、get_tasks、get_task、set_task_status、update_project、get_progress等6个核心工具；修复了API集成问题，更新为v1端点和Bearer token认证；创建了test_server.py测试脚本、deploy.py部署脚本和install_mcp.sh安装脚本；完善了README文档和Claude Desktop配置模板；所有工具都采用异步实现，包含完整的错误处理和参数验证，已准备好与AI编辑器集成。\n</info added on 2025-09-13T02:41:05.264Z>"
           },
           {
             "id": 3,
@@ -316,7 +316,7 @@
     ],
     "metadata": {
       "created": "2025-09-12T14:36:10.217Z",
-      "updated": "2025-09-13T02:30:44.936Z",
+      "updated": "2025-09-13T02:41:17.452Z",
       "description": "Tasks for master context"
     }
   }
