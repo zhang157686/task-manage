@@ -203,7 +203,7 @@
         "id": 6,
         "title": "项目进展文档管理",
         "description": "实现项目进展MD文档的生成、存储和展示功能",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           5
         ],
@@ -215,11 +215,11 @@
             "id": 1,
             "title": "进展文档后端API",
             "description": "开发项目进展文档的存储和管理API",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               5.2
             ],
-            "details": "1. 设计进展文档数据模型（project_id、content、version、updated_at、updated_by等）；2. 实现文档CRUD API（/api/projects/{project_id}/progress）；3. 添加文档版本历史记录；4. 实现文档内容的验证和清理；5. 创建文档更新权限检查；6. 添加文档的备份和恢复功能。文档内容使用Markdown格式存储，支持版本对比。"
+            "details": "1. 设计进展文档数据模型（project_id、content、version、updated_at、updated_by等）；2. 实现文档CRUD API（/api/projects/{project_id}/progress）；3. 添加文档版本历史记录；4. 实现文档内容的验证和清理；5. 创建文档更新权限检查；6. 添加文档的备份和恢复功能。文档内容使用Markdown格式存储，支持版本对比。\n<info added on 2025-09-13T01:29:51.688Z>\n开始实现进展文档后端API。\n\n**需要实现的功能：**\n1. 创建ProjectProgress数据模型\n2. 实现进展文档的CRUD API\n3. 添加版本历史记录功能\n4. 实现文档内容验证和清理\n5. 添加权限检查和备份功能\n\n**实施计划：**\n1. 首先创建ProjectProgress和ProgressHistory数据模型\n2. 实现进展文档服务层\n3. 创建相关的Pydantic schemas\n4. 实现API端点\n5. 添加数据库迁移\n\n**开始实现数据模型...**\n</info added on 2025-09-13T01:29:51.688Z>\n<info added on 2025-09-13T01:39:56.983Z>\n**进展文档后端API - 第一阶段完成**\n\n**已完成的核心功能：**\n\n1. **数据模型设计** ✅\n   - 创建了ProjectProgress模型用于存储项目进展文档\n   - 创建了ProgressHistory模型用于版本历史记录\n   - 建立了与Project和User的外键关系\n   - 添加了唯一约束确保每个项目只有一个进展文档\n\n2. **Pydantic Schemas** ✅\n   - 完整的请求/响应schema体系\n   - 包含创建、更新、查询、比较等所有操作的schema\n   - 添加了内容分析和变更摘要生成的辅助函数\n   - 支持导出、备份、恢复等高级功能的schema\n\n3. **服务层实现** ✅\n   - ProjectProgressService完整实现\n   - 支持CRUD操作和版本管理\n   - 实现了版本比较和内容分析功能\n   - 添加了发布/取消发布功能\n   - 支持版本恢复和搜索功能\n\n4. **API端点实现** ✅\n   - 完整的REST API端点 (12个端点)\n   - 支持进展文档的增删改查\n   - 版本历史管理和比较功能\n   - 统计信息和搜索功能\n   - 发布管理和版本恢复\n\n5. **数据库迁移** ✅\n   - 成功创建并应用了数据库迁移\n   - 添加了project_progress和progress_history表\n   - 创建了必要的索引优化查询性能\n   - 建立了完整的外键约束\n\n**技术实现亮点：**\n- 完整的版本控制系统，自动记录所有变更\n- 智能的变更摘要生成，提供人性化的变更描述\n- 支持版本比较和差异分析\n- 灵活的搜索和筛选功能\n- 发布状态管理，支持草稿和发布模式\n\n**API端点总览：**\n- 基础CRUD：4个端点\n- 版本管理：4个端点\n- 高级功能：4个端点（统计、搜索、发布、恢复）\n\n**当前状态：** 进展文档后端API已全面完成，为前端Markdown展示和编辑功能提供了强大的后端支持。\n</info added on 2025-09-13T01:39:56.983Z>"
           },
           {
             "id": 2,
@@ -316,7 +316,7 @@
     ],
     "metadata": {
       "created": "2025-09-12T14:36:10.217Z",
-      "updated": "2025-09-13T01:24:03.103Z",
+      "updated": "2025-09-13T01:40:13.057Z",
       "description": "Tasks for master context"
     }
   }

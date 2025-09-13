@@ -6,6 +6,7 @@ from app.models.ai_model import AIModel
 from app.models.project import Project, ProjectStatus
 from app.models.task import Task, TaskStatus, TaskPriority, TaskDependency
 from app.models.task_log import TaskLog
+from app.models.project_progress import ProjectProgress, ProgressHistory
 from app.models.project_task import ProjectTask
 
 __all__ = [
@@ -19,5 +20,7 @@ __all__ = [
     "TaskPriority",
     "TaskDependency",
     "TaskLog",
+    "ProjectProgress",
+    "ProgressHistory",
     "ProjectTask",
 ]
